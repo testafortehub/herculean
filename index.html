@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herculean — Ask 8 AI LLMs at Once</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0f;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    .header-img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ── Search ── */
+    .search-section {
+      text-align: center;
+      padding: 20px 20px 30px;
+    }
+
+    .tagline {
+      font-size: 1.05rem;
+      color: #ffffff;
+      margin-bottom: 24px;
+      letter-spacing: 0.3px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 16px 20px;
+      background: #111122;
+      border: 2px solid #ffffff;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: #c9a227; }
+    .search-input::placeholder { color: #888; }
+
+    .go-btn {
+      padding: 16px 40px;
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      border: none;
+      border-radius: 12px;
+      color: #0a0a0f;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.5px;
+    }
+
+    .go-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .go-btn:active { transform: translateY(0); }
+    .go-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* ── Search counter ── */
+    .search-meta {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .search-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 16px;
+      background: #111122;
+      border: 2px solid #ffffff;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: #ffffff;
+    }
+
+    .counter-dots { display: flex; gap: 5px; }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333355;
+      transition: background 0.3s;
+    }
+
+    .dot.used { background: #c9a227; }
+
+    /* ── Cards ── */
+    .results-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0 18px;
+    }
+
+    .results-label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      text-align: center;
+    }
+
+    .results-header .copy-all-btn {
+      position: absolute;
+      right: 0;
+    }
+
+    .copy-all-btn {
+      padding: 7px 20px;
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      border: none;
+      border-radius: 20px;
+      color: #000000;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .copy-all-btn:hover { opacity: 0.88; }
+    .copy-all-btn:disabled { opacity: 0.25; cursor: default; }
+
+    /* Single column — 1 card per row */
+    .cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: #0e0e1c;
+      border: 2px solid #ffffff;
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-name {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .confidence-badge { display: none; }
+
+    .card-body {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: #ffffff;
+    }
+
+    .card-body.empty { color: #888; font-style: italic; }
+    .card-body.error { color: #ff6b6b; }
+
+    .card-body p { margin-bottom: 8px; }
+    .card-body p:last-child { margin-bottom: 0; }
+    .card-body ul, .card-body ol { padding-left: 18px; margin-bottom: 8px; }
+    .card-body li { margin-bottom: 4px; }
+    .card-body strong { color: #ffffff; font-weight: 700; }
+    .card-body em { color: #c9a227; font-style: italic; }
+    .card-body h1, .card-body h2, .card-body h3 {
+      color: #c9a227; font-weight: 700; margin: 10px 0 6px;
+      font-size: 0.95rem;
+    }
+    .card-body code {
+      background: #1a1a30; padding: 1px 6px; border-radius: 4px;
+      font-size: 0.8rem; color: #e8c547;
+    }
+    .card-body hr { border-color: #2a2a4a; margin: 8px 0; }
+
+    .card-footer { display: flex; justify-content: flex-end; }
+
+    .copy-btn {
+      padding: 5px 16px;
+      background: transparent;
+      border: 2px solid #ffffff;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { border-color: #c9a227; color: #c9a227; }
+    .copy-btn:disabled { opacity: 0.3; cursor: default; }
+    .copy-btn.copied { color: #4caf50; border-color: #4caf50; }
+
+    /* ── Skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, #141428 25%, #1e1e3a 50%, #141428 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 5px;
+      height: 12px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton:last-child { width: 60%; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @keyframes pulseGold {
+      0%, 100% { box-shadow: 0 0 0px rgba(201,162,39,0); border-color: #ffffff; border-width: 2px; }
+      50%       { box-shadow: 0 0 20px rgba(201,162,39,0.7); border-color: #c9a227; border-width: 2px; }
+    }
+
+    .card.loading {
+      animation: pulseGold 1.6s ease-in-out infinite;
+    }
+
+    /* ── Section divider ── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid #1e1e3a;
+      margin: 60px 0 50px;
+    }
+
+    /* ── Pricing ── */
+    .pricing-section { text-align: center; }
+
+    .pricing-heading {
+      font-size: 1.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .pricing-sub {
+      color: #ffffff;
+      margin-bottom: 42px;
+      font-size: 0.92rem;
+    }
+
+    .pricing-cards {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    .price-card {
+      background: #0e0e1c;
+      border: 2px solid #ffffff;
+      border-radius: 18px;
+      padding: 32px 28px;
+      width: 280px;
+      text-align: center;
+      position: relative;
+    }
+
+    .price-card.featured {
+      border-color: #c9a227;
+      background: linear-gradient(160deg, #0e0e1c 0%, #181208 100%);
+    }
+
+    .badge-featured {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      color: #0a0a0f;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+
+    .price-tier {
+      font-size: 0.78rem;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 12px;
+    }
+
+    .price-amount {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .price-card.featured .price-amount { color: #c9a227; }
+
+    .price-strike {
+      font-size: 0.88rem;
+      color: #888;
+      text-decoration: line-through;
+      height: 20px;
+      margin-bottom: 8px;
+    }
+
+    .price-desc {
+      font-size: 0.83rem;
+      color: #ffffff;
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
+
+    .countdown-timer {
+      font-size: 0.78rem;
+      color: #c9a227;
+      margin-bottom: 18px;
+      min-height: 18px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pay-btn {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .pay-btn.primary {
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      color: #0a0a0f;
+      border: none;
+    }
+
+    .pay-btn.primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .pay-btn.secondary {
+      background: transparent;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+    }
+
+    /* ── Pay what you want ── */
+    .pwyw-section {
+      background: #0e0e1c;
+      border: 2px solid #ffffff;
+      border-radius: 18px;
+      padding: 36px 32px;
+      max-width: 520px;
+      margin: 0 auto 60px;
+      text-align: center;
+    }
+
+    .pwyw-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .pwyw-sub {
+      font-size: 0.84rem;
+      color: #ffffff;
+      margin-bottom: 26px;
+      line-height: 1.5;
+    }
+
+    .pwyw-amounts {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .pwyw-chip {
+      padding: 7px 17px;
+      border: 2px solid #ffffff;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      color: #ffffff;
+    }
+
+    .pwyw-chip.active, .pwyw-chip:hover {
+      border-color: #c9a227;
+      color: #c9a227;
+      background: rgba(201,162,39,0.1);
+    }
+
+    .pwyw-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .pwyw-prefix {
+      font-size: 1.3rem;
+      color: #c9a227;
+      font-weight: 700;
+    }
+
+    .pwyw-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: #111122;
+      border: 2px solid #ffffff;
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      outline: none;
+      text-align: center;
+    }
+
+    .pwyw-input:focus { border-color: #c9a227; }
+
+    .pwyw-btn {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      border: none;
+      border-radius: 10px;
+      color: #0a0a0f;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .pwyw-btn:hover { opacity: 0.88; }
+
+    /* ── Daily limit overlay ── */
+    .locked-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,15,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(6px);
+    }
+
+    .locked-overlay.visible { display: flex; }
+
+    .locked-box {
+      background: #111122;
+      border: 1px solid #c9a227;
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      max-width: 440px;
+    }
+
+    .locked-icon { font-size: 3rem; margin-bottom: 16px; }
+    .locked-title { font-size: 1.35rem; font-weight: 700; color: #ffffff; margin-bottom: 10px; }
+    .locked-sub { color: #ffffff; margin-bottom: 28px; font-size: 0.92rem; line-height: 1.6; }
+
+    .locked-btn {
+      display: block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #c9a227, #e8c547);
+      border: none;
+      border-radius: 10px;
+      color: #0a0a0f;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 14px;
+    }
+
+    .locked-dismiss {
+      font-size: 0.82rem;
+      color: #aaa;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .locked-dismiss:hover { color: #fff; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 11px 18px;
+      background: #111122;
+      border: 1px solid #c9a227;
+      border-radius: 10px;
+      color: #c9a227;
+      font-size: 0.83rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 28px;
+      color: #888;
+      font-size: 0.78rem;
+      border-top: 1px solid #1e1e3a;
+    }
+  </style>
+</head>
+<body>
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 160" style="width:100%;display:block;">
+    <defs>
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#9a7510"/>
+        <stop offset="35%" style="stop-color:#c9a227"/>
+        <stop offset="65%" style="stop-color:#e8c547"/>
+        <stop offset="100%" style="stop-color:#9a7510"/>
+      </linearGradient>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#12121f"/>
+        <stop offset="100%" style="stop-color:#0a0a0f"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="160" fill="url(#bgGrad)"/>
+    <line x1="0" y1="1" x2="1200" y2="1" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
+    <line x1="0" y1="159" x2="1200" y2="159" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
+    <line x1="60" y1="80" x2="340" y2="80" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
+    <line x1="860" y1="80" x2="1140" y2="80" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
+    <polygon points="370,80 385,65 400,80 385,95" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
+    <polygon points="800,80 815,65 830,80 815,95" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
+    <text x="600" y="90" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="78" font-weight="900" letter-spacing="8" fill="url(#goldGrad)">HERCULEAN</text>
+    <text x="600" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="400" letter-spacing="6" fill="#888">MULTI-LLM SEARCH</text>
+  </svg>
+
+  <div class="container">
+
+    <div class="search-section">
+      <p class="tagline">Ask 10 Leading AI LLMs At Once — Compare, Copy, Conquer.</p>
+      <div class="search-bar">
+        <input
+          id="queryInput"
+          type="text"
+          class="search-input"
+          placeholder="I want to learn the meaning of life :)"
+          maxlength="500"
+          onkeydown="if(event.key==='Enter') runQuery()"
+        >
+        <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
+      </div>
+      <div class="search-meta">
+        <div class="search-counter">
+          <span id="counterText">5 free searches today</span>
+          <div class="counter-dots" id="counterDots"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-header">
+      <span class="results-label">Responses</span>
+      <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+
+  </div>
+
+  <!-- Waitlist -->
+  <div style="max-width:800px;margin:0 auto;padding:0 20px">
+    <hr class="section-divider" style="margin-top:0;margin-bottom:30px">
+
+    <div class="pricing-section">
+      <h2 class="pricing-heading">Want unlimited access?</h2>
+      <p class="pricing-sub">Fill out the waitlist form and we'll notify you when we open up the full release.</p>
+
+      <div class="pricing-cards">
+
+        <div class="price-card featured">
+          <div class="badge-featured">LIMITED SPOTS</div>
+          <div class="price-tier">Unlimited Access</div>
+          <div class="price-amount" style="font-size:2.4rem;padding:10px 0;color:#c9a227;font-weight:800">Waitlist</div>
+          <div class="price-desc">All 10 AI LLMs. Unlimited searches.<br>Every future update included.<br>Lifetime access — one-time price.</div>
+          <div style="height:18px"></div>
+          <a href="https://forms.gle/WvE9jhJPcMzhf2so6" class="pay-btn primary" target="_blank" rel="noopener">
+            Join the Waitlist
+          </a>
+        </div>
+
+        <div class="price-card featured">
+          <div class="badge-featured">CURRENTLY ACTIVE</div>
+          <div class="price-tier">Free Tier</div>
+          <div class="price-amount" style="font-size:2.4rem;padding:10px 0;color:#c9a227;font-weight:800">Free</div>
+          <div class="price-desc">5 searches per day.<br>All 10 AI LLMs.<br>No sign-up needed.</div>
+          <div style="height:18px"></div>
+          <span class="pay-btn primary" style="cursor:default">Currently Active</span>
+        </div>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" style="margin-top:10px">
+  </div>
+
+  <footer class="footer">
+    &copy; 2026 Testaforte Entertainment &nbsp;&bull;&nbsp; Herculean Multi-LLM Search
+  </footer>
+
+  <!-- Daily limit overlay -->
+  <div class="locked-overlay" id="lockedOverlay">
+    <div class="locked-box">
+      <div class="locked-icon">⚡</div>
+      <h3 class="locked-title">You've used your 5 free searches</h3>
+      <p class="locked-sub">Come back tomorrow for 5 more free searches — or unlock unlimited access with a single one-time payment.</p>
+      <a id="overlayPayBtn" href="#" class="locked-btn" target="_blank" rel="noopener">
+        Get Unlimited Access — PayPal
+      </a>
+      <span class="locked-dismiss" onclick="dismissOverlay()">Dismiss — I'll come back tomorrow</span>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!=="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_zCBWu4fKfFGCok4odo7JfnX7nBaOdw19JXAxUFQ2hjy', { api_host: 'https://app.posthog.com' });
+  </script>
+
+  <script>
+    // ─── CONFIGURATION — update before going live ──────────────────
+    const BACKEND_URL      = '';
+    const DAILY_LIMIT      = 5;
+    const LAUNCH_DATE      = new Date('2026-04-17T00:00:00');
+    const EARLY_BIRD_DAYS  = 7;
+    const EARLY_BIRD_PRICE = 14.99;
+    const REGULAR_PRICE    = 49.00;
+    const PAYPAL_ME        = 'https://www.paypal.me/robvallarelli';
+    // ───────────────────────────────────────────────────────────────
+
+    const LLM_ORDER = ['claude','gpt','gemini','groq','deepseek','openrouter','togetherai','cerebras','qwen','nemotron'];
+    const LLM_INFO  = {
+      claude:     { name: 'Claude',    icon: '🧠', confidence: 92 },
+      gpt:        { name: 'GPT-4o',    icon: '⚡', confidence: 88 },
+      gemini:     { name: 'Gemini',    icon: '🎨', confidence: 85 },
+      groq:       { name: 'Groq',      icon: '🚀', confidence: 90 },
+      deepseek:   { name: 'DeepSeek',  icon: '🔮', confidence: 87 },
+      openrouter: { name: 'Llama 3',   icon: '🦙', confidence: 84 },
+      togetherai: { name: 'Mistral',   icon: '🌟', confidence: 86 },
+      cerebras:   { name: 'Cerebras',  icon: '⚙️', confidence: 83 },
+      qwen:       { name: 'Qwen 2.5',  icon: '🐉', confidence: 86 },
+      nemotron:   { name: 'Nemotron',  icon: '🔬', confidence: 88 },
+    };
+
+    // ─── Search counter ────────────────────────────────────────────
+    function getUsage() {
+      const today = new Date().toDateString();
+      try {
+        const stored = JSON.parse(localStorage.getItem('herc_usage') || '{}');
+        return stored.date === today ? stored : { date: today, count: 0 };
+      } catch { return { date: today, count: 0 }; }
+    }
+
+    function saveUsage(u) { localStorage.setItem('herc_usage', JSON.stringify(u)); }
+
+    function updateCounterUI() {
+      const usage     = getUsage();
+      const remaining = Math.max(0, DAILY_LIMIT - usage.count);
+      document.getElementById('counterText').textContent =
+        remaining === 0 ? 'No free searches left today' :
+        remaining === 1 ? '1 free search left today'    :
+        `${remaining} free searches left today`;
+      const dots = document.getElementById('counterDots');
+      dots.innerHTML = '';
+      for (let i = 0; i < DAILY_LIMIT; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i < usage.count ? ' used' : '');
+        dots.appendChild(d);
+      }
+      document.getElementById('goBtn').disabled = remaining === 0;
+    }
+
+    // ─── Early bird pricing ────────────────────────────────────────
+    function setupPricing() {
+      const earlyBirdEnd = new Date(LAUNCH_DATE.getTime() + EARLY_BIRD_DAYS * 86400000);
+      const isEarlyBird  = new Date() < earlyBirdEnd;
+      const activePrice  = isEarlyBird ? EARLY_BIRD_PRICE : REGULAR_PRICE;
+      const payLink      = `${PAYPAL_ME}/${activePrice.toFixed(2)}`;
+      document.getElementById('currentPrice').textContent  = `$${activePrice.toFixed(2)}`;
+      document.getElementById('mainPayBtn').href            = payLink;
+      document.getElementById('overlayPayBtn').href         = payLink;
+      if (isEarlyBird) {
+        document.getElementById('priceStrike').textContent = `Regular $${REGULAR_PRICE.toFixed(2)}`;
+        document.getElementById('earlyBirdBadge').style.display = '';
+        startCountdown(earlyBirdEnd);
+      } else {
+        document.getElementById('priceStrike').textContent = '';
+        document.getElementById('earlyBirdBadge').style.display = 'none';
+        document.getElementById('countdown').textContent   = '';
+      }
+    }
+
+    function startCountdown(endDate) {
+      const pad = n => String(n).padStart(2, '0');
+      function tick() {
+        const diff = endDate - new Date();
+        if (diff <= 0) { setupPricing(); return; }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000)  / 60000);
+        const s = Math.floor((diff % 60000)    / 1000);
+        const label = d > 0 ? `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s` : `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+        document.getElementById('countdown').textContent = `⏱ Offer ends in: ${label}`;
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    // ─── PWYW ──────────────────────────────────────────────────────
+    function setAmount(val) { document.getElementById('pwywInput').value = val; syncChips(); }
+
+    function syncChips() {
+      const val = parseFloat(document.getElementById('pwywInput').value);
+      document.querySelectorAll('.pwyw-chip').forEach(c =>
+        c.classList.toggle('active', parseFloat(c.textContent.replace('$','')) === val)
+      );
+    }
+
+    function payWhatYouWant() {
+      const val = parseFloat(document.getElementById('pwywInput').value);
+      if (!val || val < 1) { showToast('Please enter at least $1 — every bit counts!'); return; }
+      posthog.capture('herc_pwyw_click', { amount: val });
+      window.open(`${PAYPAL_ME}/${val.toFixed(2)}`, '_blank', 'noopener');
+    }
+
+    // ─── Cards ────────────────────────────────────────────────────
+    function renderEmptyCards() {
+      document.getElementById('cardsGrid').innerHTML = LLM_ORDER.map(key => {
+        const info = LLM_INFO[key];
+        return `
+          <div class="card" id="card-${key}">
+            <div class="card-header">
+              <div class="card-name"><span>${info.icon}</span><span>${info.name}</span></div>
+              <span class="confidence-badge">${info.confidence}%</span>
+            </div>
+            <div class="card-body empty" id="body-${key}">Waiting for query…</div>
+            <div class="card-footer">
+              <button class="copy-btn" id="copy-${key}" onclick="copyCard('${key}')" disabled>Copy</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function showLoadingCards() {
+      LLM_ORDER.forEach(key => {
+        const card = document.getElementById(`card-${key}`);
+        if (card) card.classList.add('loading');
+        const body = document.getElementById(`body-${key}`);
+        body.className = 'card-body';
+        body.innerHTML = Array(4).fill('<div class="skeleton"></div>').join('');
+        document.getElementById(`copy-${key}`).disabled = true;
+      });
+    }
+
+    function renderResults(data) {
+      const allParts = [];
+      LLM_ORDER.forEach(key => {
+        const card = document.getElementById(`card-${key}`);
+        if (card) card.classList.remove('loading');
+        const body    = document.getElementById(`body-${key}`);
+        const copyBtn = document.getElementById(`copy-${key}`);
+        const r = data[key];
+        if (!r)      { body.className = 'card-body error'; body.textContent = 'No response received.'; return; }
+        if (r.error) { body.className = 'card-body error'; body.textContent = `Error: ${r.error}`;     return; }
+        body.className   = 'card-body';
+        body.innerHTML   = marked.parse(r.content || '(empty response)');
+        copyBtn.disabled = false;
+        allParts.push(`=== ${LLM_INFO[key].name} ===\n${r.content}`);
+      });
+      const btn = document.getElementById('copyAllBtn');
+      btn.disabled      = allParts.length === 0;
+      btn.dataset.content = allParts.join('\n\n');
+    }
+
+    // ─── Query ────────────────────────────────────────────────────
+    async function runQuery() {
+      const query = document.getElementById('queryInput').value.trim();
+      if (!query) return;
+      const usage = getUsage();
+      if (usage.count >= DAILY_LIMIT) { showLockedOverlay(); return; }
+      usage.count++;
+      saveUsage(usage);
+      updateCounterUI();
+      posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count });
+      document.getElementById('goBtn').disabled = true;
+      document.getElementById('copyAllBtn').disabled = true;
+      showLoadingCards();
+      try {
+        const resp = await fetch(`${BACKEND_URL}/query`, {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ query }),
+        });
+        if (!resp.ok) throw new Error(`Server responded ${resp.status}`);
+        renderResults(await resp.json());
+      } catch (err) {
+        LLM_ORDER.forEach(key => {
+          const body = document.getElementById(`body-${key}`);
+          body.className = 'card-body error';
+          body.textContent = `Could not reach server: ${err.message}`;
+        });
+      } finally {
+        document.getElementById('goBtn').disabled = getUsage().count >= DAILY_LIMIT;
+      }
+    }
+
+    // ─── Copy ─────────────────────────────────────────────────────
+    async function copyCard(key) {
+      const text = document.getElementById(`body-${key}`).textContent;
+      const btn  = document.getElementById(`copy-${key}`);
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      } catch { showToast('Copy failed — select text manually'); }
+    }
+
+    async function copyAll() {
+      const btn     = document.getElementById('copyAllBtn');
+      const content = btn.dataset.content || '';
+      try {
+        await navigator.clipboard.writeText(content);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy All'; }, 2200);
+        showToast('All 10 responses copied to clipboard');
+      } catch { showToast('Copy failed — try manually'); }
+    }
+
+    // ─── Overlay / toast ──────────────────────────────────────────
+    function showLockedOverlay() {
+      posthog.capture('herc_paywall_hit');
+      document.getElementById('lockedOverlay').classList.add('visible');
+    }
+    function dismissOverlay()    { document.getElementById('lockedOverlay').classList.remove('visible'); }
+
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────
+    renderEmptyCards();
+    updateCounterUI();
+    setupPricing();
+  </script>
+
+</body>
+</html>
