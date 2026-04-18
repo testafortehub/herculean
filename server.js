@@ -15,9 +15,9 @@ const SYSTEM_PROMPT = 'You are a helpful, knowledgeable, and practical assistant
 const APIs = {
   claude:    { key: process.env.OPENROUTER_API_KEY,  model: 'anthropic/claude-3-haiku' },
   gpt:       { key: process.env.GPT_API_KEY,        model: 'gpt-4o-mini' },
-  gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-2.0-flash-001' },
+  gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-flash-1.5-8b' },
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
-  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'deepseek/deepseek-r1-distill-llama-8b' },
+  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'deepseek/deepseek-r1-distill-qwen-7b' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
   togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
