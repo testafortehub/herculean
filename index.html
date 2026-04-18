@@ -29,7 +29,7 @@
     /* ── Search ── */
     .search-section {
       text-align: center;
-      padding: 20px 20px 30px;
+      padding: 12px 20px 16px;
     }
 
     .tagline {
@@ -115,7 +115,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 10px 0 18px;
+      margin: 6px 0 10px;
     }
 
     .results-label {
@@ -594,7 +594,7 @@
 </head>
 <body>
 
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 160" style="width:100%;display:block;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 110" style="width:100%;display:block;">
     <defs>
       <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" style="stop-color:#9a7510"/>
@@ -607,15 +607,15 @@
         <stop offset="100%" style="stop-color:#0a0a0f"/>
       </linearGradient>
     </defs>
-    <rect width="1200" height="160" fill="url(#bgGrad)"/>
+    <rect width="1200" height="110" fill="url(#bgGrad)"/>
     <line x1="0" y1="1" x2="1200" y2="1" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
-    <line x1="0" y1="159" x2="1200" y2="159" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
-    <line x1="60" y1="80" x2="340" y2="80" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
-    <line x1="860" y1="80" x2="1140" y2="80" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
-    <polygon points="370,80 385,65 400,80 385,95" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
-    <polygon points="800,80 815,65 830,80 815,95" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
-    <text x="600" y="90" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="78" font-weight="900" letter-spacing="8" fill="url(#goldGrad)">HERCULEAN</text>
-    <text x="600" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="400" letter-spacing="6" fill="#888">MULTI-LLM SEARCH</text>
+    <line x1="0" y1="109" x2="1200" y2="109" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
+    <line x1="60" y1="55" x2="330" y2="55" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
+    <line x1="870" y1="55" x2="1140" y2="55" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
+    <polygon points="355,55 370,42 385,55 370,68" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
+    <polygon points="815,55 830,42 845,55 830,68" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
+    <text x="600" y="64" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="62" font-weight="900" letter-spacing="8" fill="url(#goldGrad)">HERCULEAN</text>
+    <text x="600" y="96" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="400" letter-spacing="6" fill="#888">MULTI-LLM SEARCH</text>
   </svg>
 
   <div class="container">
@@ -832,7 +832,7 @@
         return `
           <div class="card" id="card-${key}">
             <div class="card-header">
-              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="width:64px;height:64px;object-fit:contain;border-radius:10px;"></div>
+              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="width:80px;height:80px;object-fit:contain;border-radius:10px;"></div>
               <span class="confidence-badge">${info.confidence}%</span>
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
