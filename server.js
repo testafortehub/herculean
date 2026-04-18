@@ -17,7 +17,7 @@ const APIs = {
   gpt:       { key: process.env.GPT_API_KEY,        model: 'gpt-4o-mini' },
   gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-2.0-flash-lite-001' },
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
-  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mistral-large' },
+  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'google/gemma-3-27b-it:free' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
   togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
@@ -135,7 +135,7 @@ async function callDeepSeek(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.deepseek.key}` },
   });
-  return { name: 'DeepSeek', icon: '🔮', confidence: 87, content: response.data.choices?.[0]?.message?.content || '' };
+  return { name: 'Gemma 3', icon: '🔷', confidence: 87, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callOpenRouter(query) {
