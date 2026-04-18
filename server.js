@@ -25,38 +25,51 @@ const APIs = {
   nemotron:  { key: process.env.OPENROUTER_API_KEY, model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
 };
 
-// Query handler
+// Query handler — SSE streaming
 app.post('/query', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: 'No query provided' });
 
-  const results = {};
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
 
-  const promises = [
-    callClaude(query),
-    callGPT(query),
-    callGemini(query),
-    callGroq(query),
-    callDeepSeek(query),
-    callOpenRouter(query),
-    callTogetherAI(query),
-    callCerebras(query),
-    callQwen(query),
-    callNemotron(query),
+  const send = obj => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+
+  const results = {};
+  let completed = 0;
+  const total = 10;
+
+  const calls = [
+    { key: 'claude',     fn: callClaude },
+    { key: 'gpt',        fn: callGPT },
+    { key: 'gemini',     fn: callGemini },
+    { key: 'groq',       fn: callGroq },
+    { key: 'deepseek',   fn: callDeepSeek },
+    { key: 'openrouter', fn: callOpenRouter },
+    { key: 'togetherai', fn: callTogetherAI },
+    { key: 'cerebras',   fn: callCerebras },
+    { key: 'qwen',       fn: callQwen },
+    { key: 'nemotron',   fn: callNemotron },
   ];
 
-  const responses = await Promise.allSettled(promises);
+  await Promise.all(calls.map(async ({ key, fn }) => {
+    try {
+      results[key] = await fn(query);
+    } catch (e) {
+      const detail = e.response?.data
+        ? JSON.stringify(e.response.data).substring(0, 300)
+        : e.message;
+      results[key] = { error: detail };
+    }
+    completed++;
+    send({ type: 'progress', completed, total, key });
+  }));
 
-  const llmNames = ['claude', 'gpt', 'gemini', 'groq', 'deepseek', 'openrouter', 'togetherai', 'cerebras', 'qwen', 'nemotron'];
-  responses.forEach((r, idx) => {
-    const detail = r.reason?.response?.data
-      ? JSON.stringify(r.reason.response.data).substring(0, 300)
-      : r.reason?.message;
-    results[llmNames[idx]] = r.status === 'fulfilled' ? r.value : { error: detail };
-  });
+  send({ type: 'status', message: 'Synthesizing…' });
 
-  // Build synthesis from successful responses
-  const successfulResponses = llmNames
+  const successfulResponses = Object.keys(results)
     .filter(k => results[k] && !results[k].error)
     .map(k => `### ${results[k].name}\n${results[k].content}`)
     .join('\n\n');
@@ -79,7 +92,8 @@ app.post('/query', async (req, res) => {
     }
   }
 
-  res.json(results);
+  send({ type: 'done', results });
+  res.end();
 });
 
 async function callClaude(query) {
