@@ -686,6 +686,9 @@
         <span class="synthesis-title">Herculean Synthesis</span>
       </div>
       <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses…</div>
+      <div class="card-footer" style="margin-top:14px;">
+        <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
+      </div>
     </div>
 
     <div class="cards-grid" id="cardsGrid"></div>
@@ -914,12 +917,15 @@
 
       // Render synthesis
       const synthBody = document.getElementById('synthesisBody');
+      const synthBtn  = document.getElementById('copySynthBtn');
       if (data.synthesis && !data.synthesis.error) {
         synthBody.className = 'synthesis-body';
         synthBody.innerHTML = marked.parse(data.synthesis.content);
+        synthBtn.disabled   = false;
       } else {
         synthBody.className = 'synthesis-body loading';
         synthBody.textContent = data.synthesis?.error || 'Synthesis unavailable.';
+        synthBtn.disabled   = true;
       }
     }
 
@@ -953,6 +959,18 @@
       } finally {
         document.getElementById('goBtn').disabled = getUsage().count >= DAILY_LIMIT;
       }
+    }
+
+    // ─── Copy synthesis ───────────────────────────────────────────
+    async function copySynthesis() {
+      const text = document.getElementById('synthesisBody').textContent;
+      const btn  = document.getElementById('copySynthBtn');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      } catch { showToast('Copy failed — select text manually'); }
     }
 
     // ─── Copy ─────────────────────────────────────────────────────
