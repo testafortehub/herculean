@@ -19,7 +19,7 @@ const APIs = {
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
   deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'deepseek/deepseek-chat' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
-  togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x7b-instruct' },
+  togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
   qwen:      { key: process.env.OPENROUTER_API_KEY, model: 'qwen/qwen-2.5-72b-instruct' },
   nemotron:  { key: process.env.OPENROUTER_API_KEY, model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
@@ -48,7 +48,7 @@ app.post('/query', async (req, res) => {
 
   await Promise.all(calls.map(async ({ key, fn }) => {
     try {
-      results[key] = await Promise.race([fn(query), timeout(25000)]);
+      results[key] = await Promise.race([fn(query), timeout(35000)]);
     } catch (e) {
       const detail = e.response?.data
         ? JSON.stringify(e.response.data).substring(0, 300)
