@@ -25,21 +25,13 @@ const APIs = {
   nemotron:  { key: process.env.OPENROUTER_API_KEY, model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
 };
 
-// Query handler — SSE streaming
+// Query handler
 app.post('/query', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: 'No query provided' });
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
-
-  const send = obj => res.write(`data: ${JSON.stringify(obj)}\n\n`);
-
   const results = {};
-  let completed = 0;
-  const total = 10;
+  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
 
   const calls = [
     { key: 'claude',     fn: callClaude },
@@ -54,8 +46,6 @@ app.post('/query', async (req, res) => {
     { key: 'nemotron',   fn: callNemotron },
   ];
 
-  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
-
   await Promise.all(calls.map(async ({ key, fn }) => {
     try {
       results[key] = await Promise.race([fn(query), timeout(25000)]);
@@ -65,11 +55,7 @@ app.post('/query', async (req, res) => {
         : e.message;
       results[key] = { error: detail };
     }
-    completed++;
-    send({ type: 'progress', completed, total, key });
   }));
-
-  send({ type: 'status', message: 'Synthesizing…' });
 
   const successfulResponses = Object.keys(results)
     .filter(k => results[k] && !results[k].error)
@@ -94,8 +80,7 @@ app.post('/query', async (req, res) => {
     }
   }
 
-  send({ type: 'done', results });
-  res.end();
+  res.json(results);
 });
 
 async function callClaude(query) {

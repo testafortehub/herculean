@@ -177,6 +177,7 @@
     .synthesis-header {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       margin-bottom: 14px;
     }
@@ -581,36 +582,6 @@
 
     .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ── Progress bar ── */
-    #progressWrap {
-      display: none;
-      margin: 0 0 28px;
-      text-align: center;
-    }
-
-    #progressText {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 10px;
-      letter-spacing: 0.3px;
-    }
-
-    #progressTrack {
-      background: #111122;
-      border: 2px solid #1e1e3a;
-      border-radius: 20px;
-      overflow: hidden;
-      height: 10px;
-    }
-
-    #progressFill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #c9a227, #e8c547);
-      border-radius: 20px;
-      transition: width 0.4s ease;
-    }
-
     /* ── Footer ── */
     .footer {
       text-align: center;
@@ -673,11 +644,6 @@
     <div class="results-header">
       <span class="results-label">Responses</span>
       <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
-    </div>
-
-    <div id="progressWrap">
-      <div id="progressText">Querying models: 0 / 10</div>
-      <div id="progressTrack"><div id="progressFill"></div></div>
     </div>
 
     <div id="synthesisCard">
@@ -933,30 +899,9 @@
       saveUsage(usage);
       updateCounterUI();
       posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count });
-
       document.getElementById('goBtn').disabled = true;
       document.getElementById('copyAllBtn').disabled = true;
-
-      // Reset display state
-      document.getElementById('synthesisCard').classList.remove('visible');
-      document.getElementById('cardsGrid').style.display = 'none';
-      renderEmptyCards();
-
-      // Show progress bar
-      const progressWrap = document.getElementById('progressWrap');
-      const progressFill = document.getElementById('progressFill');
-      const progressText = document.getElementById('progressText');
-      progressWrap.style.display = 'block';
-      progressFill.style.width   = '0%';
-      progressText.textContent   = 'Querying models: 0 / 10';
-
-      const revealResults = results => {
-        progressWrap.style.display = 'none';
-        document.getElementById('cardsGrid').style.display = '';
-        renderResults(results);
-        document.getElementById('synthesisCard').classList.add('visible');
-      };
-
+      showLoadingCards();
       try {
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
@@ -964,42 +909,8 @@
           body   : JSON.stringify({ query }),
         });
         if (!resp.ok) throw new Error(`Server responded ${resp.status}`);
-
-        const reader  = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split('\n\n');
-          buffer = events.pop();
-
-          for (const chunk of events) {
-            const line = chunk.split('\n').find(l => l.startsWith('data: '));
-            if (!line) continue;
-            let evt;
-            try { evt = JSON.parse(line.slice(6)); } catch { continue; }
-
-            if (evt.type === 'progress') {
-              const pct = Math.round((evt.completed / evt.total) * 85);
-              progressFill.style.width  = pct + '%';
-              progressText.textContent  = `Querying models: ${evt.completed} / ${evt.total}`;
-            } else if (evt.type === 'status') {
-              progressFill.style.width  = '92%';
-              progressText.textContent  = evt.message;
-            } else if (evt.type === 'done') {
-              progressFill.style.width  = '100%';
-              progressText.textContent  = 'Complete!';
-              setTimeout(() => revealResults(evt.results), 350);
-            }
-          }
-        }
+        renderResults(await resp.json());
       } catch (err) {
-        progressWrap.style.display = 'none';
-        document.getElementById('cardsGrid').style.display = '';
         LLM_ORDER.forEach(key => {
           const body = document.getElementById(`body-${key}`);
           body.className  = 'card-body error';
