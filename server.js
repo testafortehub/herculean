@@ -17,7 +17,7 @@ const APIs = {
   gpt:       { key: process.env.GPT_API_KEY,        model: 'gpt-4o-mini' },
   gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-2.0-flash-lite-001' },
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
-  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'cohere/command-r' },
+  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'cohere/command-r-plus' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
   togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
@@ -34,21 +34,21 @@ app.post('/query', async (req, res) => {
   const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
 
   const calls = [
-    { key: 'claude',     fn: callClaude },
-    { key: 'gpt',        fn: callGPT },
-    { key: 'gemini',     fn: callGemini },
-    { key: 'groq',       fn: callGroq },
-    { key: 'deepseek',   fn: callDeepSeek },
-    { key: 'openrouter', fn: callOpenRouter },
-    { key: 'togetherai', fn: callTogetherAI },
-    { key: 'cerebras',   fn: callCerebras },
-    { key: 'qwen',       fn: callQwen },
-    { key: 'nemotron',   fn: callNemotron },
+    { key: 'claude',     fn: callClaude,     ms: 35000 },
+    { key: 'gpt',        fn: callGPT,        ms: 35000 },
+    { key: 'gemini',     fn: callGemini,     ms: 90000 },
+    { key: 'groq',       fn: callGroq,       ms: 35000 },
+    { key: 'deepseek',   fn: callDeepSeek,   ms: 90000 },
+    { key: 'openrouter', fn: callOpenRouter, ms: 35000 },
+    { key: 'togetherai', fn: callTogetherAI, ms: 35000 },
+    { key: 'cerebras',   fn: callCerebras,   ms: 35000 },
+    { key: 'qwen',       fn: callQwen,       ms: 35000 },
+    { key: 'nemotron',   fn: callNemotron,   ms: 35000 },
   ];
 
-  await Promise.all(calls.map(async ({ key, fn }) => {
+  await Promise.all(calls.map(async ({ key, fn, ms }) => {
     try {
-      results[key] = await Promise.race([fn(query), timeout(35000)]);
+      results[key] = await Promise.race([fn(query), timeout(ms)]);
     } catch (e) {
       const detail = e.response?.data
         ? JSON.stringify(e.response.data).substring(0, 300)
