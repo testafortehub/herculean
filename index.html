@@ -26,6 +26,55 @@
       padding: 0 20px 60px;
     }
 
+    /* ── Header ── */
+    .site-header {
+      background: linear-gradient(180deg, #12121f 0%, #0a0a0f 100%);
+      border-top: 1px solid rgba(201,162,39,0.3);
+      border-bottom: 1px solid rgba(201,162,39,0.3);
+      padding: 18px 20px 14px;
+      text-align: center;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .header-text-wrap { flex: 1; }
+
+    .header-title {
+      font-size: clamp(2.2rem, 10vw, 4.8rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, #9a7510 0%, #c9a227 35%, #e8c547 65%, #9a7510 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+
+    .header-sub {
+      font-size: clamp(0.6rem, 2.2vw, 0.9rem);
+      letter-spacing: 0.45em;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .header-deco {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #c9a227);
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .header-deco-right { transform: rotate(180deg); }
+
+    @media (max-width: 480px) {
+      .header-deco { display: none; }
+      .search-bar { flex-direction: column; }
+      .go-btn { width: 100%; }
+    }
+
     /* ── Search ── */
     .search-section {
       text-align: center;
@@ -594,29 +643,14 @@
 </head>
 <body>
 
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 110" style="width:100%;display:block;">
-    <defs>
-      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" style="stop-color:#9a7510"/>
-        <stop offset="35%" style="stop-color:#c9a227"/>
-        <stop offset="65%" style="stop-color:#e8c547"/>
-        <stop offset="100%" style="stop-color:#9a7510"/>
-      </linearGradient>
-      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#12121f"/>
-        <stop offset="100%" style="stop-color:#0a0a0f"/>
-      </linearGradient>
-    </defs>
-    <rect width="1200" height="110" fill="url(#bgGrad)"/>
-    <line x1="0" y1="1" x2="1200" y2="1" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
-    <line x1="0" y1="109" x2="1200" y2="109" stroke="#c9a227" stroke-width="1" opacity="0.3"/>
-    <line x1="60" y1="55" x2="330" y2="55" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
-    <line x1="870" y1="55" x2="1140" y2="55" stroke="#c9a227" stroke-width="1" opacity="0.25"/>
-    <polygon points="355,55 370,42 385,55 370,68" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
-    <polygon points="815,55 830,42 845,55 830,68" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.4"/>
-    <text x="600" y="64" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="62" font-weight="900" letter-spacing="8" fill="url(#goldGrad)">HERCULEAN</text>
-    <text x="600" y="96" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="400" letter-spacing="6" fill="#888">MULTI-LLM SEARCH</text>
-  </svg>
+  <div class="site-header">
+    <div class="header-deco header-deco-left"></div>
+    <div class="header-text-wrap">
+      <div class="header-title">HERCULEAN</div>
+      <div class="header-sub">MULTI-LLM SEARCH</div>
+    </div>
+    <div class="header-deco header-deco-right"></div>
+  </div>
 
   <div class="container">
 
