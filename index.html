@@ -187,8 +187,18 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-    .synthesis-body { color: #f0f0f0; font-size: 0.95rem; line-height: 1.7; }
+    .synthesis-body { color: #f0f0f0; font-size: 0.95rem; line-height: 1.8; }
     .synthesis-body.loading { color: #888; font-style: italic; }
+    .synthesis-body p { margin-bottom: 12px; }
+    .synthesis-body p:last-child { margin-bottom: 0; }
+    .synthesis-body ul, .synthesis-body ol { padding-left: 20px; margin-bottom: 12px; }
+    .synthesis-body li { margin-bottom: 5px; }
+    .synthesis-body strong { color: #ffffff; font-weight: 700; }
+    .synthesis-body em { color: #c9a227; font-style: italic; }
+    .synthesis-body h1, .synthesis-body h2, .synthesis-body h3 {
+      color: #c9a227; font-weight: 700; margin: 14px 0 7px; font-size: 1rem;
+    }
+    .synthesis-body hr { border-color: #3a2e00; margin: 10px 0; }
 
     .card-header {
       display: flex;
@@ -856,7 +866,7 @@
         return `
           <div class="card" id="card-${key}">
             <div class="card-header">
-              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;"></div>
+              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="width:64px;height:64px;object-fit:contain;border-radius:10px;"></div>
               <span class="confidence-badge">${info.confidence}%</span>
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
