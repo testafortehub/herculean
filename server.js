@@ -54,9 +54,11 @@ app.post('/query', async (req, res) => {
     { key: 'nemotron',   fn: callNemotron },
   ];
 
+  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
+
   await Promise.all(calls.map(async ({ key, fn }) => {
     try {
-      results[key] = await fn(query);
+      results[key] = await Promise.race([fn(query), timeout(18000)]);
     } catch (e) {
       const detail = e.response?.data
         ? JSON.stringify(e.response.data).substring(0, 300)
@@ -86,7 +88,7 @@ app.post('/query', async (req, res) => {
       }, {
         headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
       });
-      results.synthesis = { content: synthResponse.data.choices[0].message.content };
+      results.synthesis = { content: synthResponse.data.choices?.[0]?.message?.content || '' };
     } catch (e) {
       results.synthesis = { error: 'Synthesis unavailable' };
     }
@@ -104,7 +106,7 @@ async function callClaude(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
   });
-  return { name: 'Claude', icon: '🧠', confidence: 92, content: response.data.choices[0].message.content };
+  return { name: 'Claude', icon: '🧠', confidence: 92, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callGPT(query) {
@@ -115,7 +117,7 @@ async function callGPT(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gpt.key}` },
   });
-  return { name: 'GPT', icon: '⚡', confidence: 88, content: response.data.choices[0].message.content };
+  return { name: 'GPT', icon: '⚡', confidence: 88, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callGemini(query) {
@@ -126,7 +128,7 @@ async function callGemini(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gemini.key}` },
   });
-  return { name: 'Gemini', icon: '🎨', confidence: 85, content: response.data.choices[0].message.content };
+  return { name: 'Gemini', icon: '🎨', confidence: 85, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callGroq(query) {
@@ -137,7 +139,7 @@ async function callGroq(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.groq.key}` },
   });
-  return { name: 'Groq', icon: '⚡', confidence: 90, content: response.data.choices[0].message.content };
+  return { name: 'Groq', icon: '⚡', confidence: 90, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callDeepSeek(query) {
@@ -148,7 +150,7 @@ async function callDeepSeek(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.deepseek.key}` },
   });
-  return { name: 'DeepSeek', icon: '🔮', confidence: 87, content: response.data.choices[0].message.content };
+  return { name: 'DeepSeek', icon: '🔮', confidence: 87, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callOpenRouter(query) {
@@ -159,7 +161,7 @@ async function callOpenRouter(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
-  return { name: 'Llama 3', icon: '🦙', confidence: 84, content: response.data.choices[0].message.content };
+  return { name: 'Llama 3', icon: '🦙', confidence: 84, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callTogetherAI(query) {
@@ -170,7 +172,7 @@ async function callTogetherAI(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.togetherai.key}` },
   });
-  return { name: 'Mistral', icon: '🌟', confidence: 86, content: response.data.choices[0].message.content };
+  return { name: 'Mistral', icon: '🌟', confidence: 86, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callCerebras(query) {
@@ -181,7 +183,7 @@ async function callCerebras(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.cerebras.key}` },
   });
-  return { name: 'Cerebras', icon: '⚙️', confidence: 83, content: response.data.choices[0].message.content };
+  return { name: 'Cerebras', icon: '⚙️', confidence: 83, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callQwen(query) {
@@ -192,7 +194,7 @@ async function callQwen(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
-  return { name: 'Qwen 2.5', icon: '🐉', confidence: 86, content: response.data.choices[0].message.content };
+  return { name: 'Qwen 2.5', icon: '🐉', confidence: 86, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 async function callNemotron(query) {
@@ -203,7 +205,7 @@ async function callNemotron(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.nemotron.key}` },
   });
-  return { name: 'Nemotron', icon: '🔬', confidence: 88, content: response.data.choices[0].message.content };
+  return { name: 'Nemotron', icon: '🔬', confidence: 88, content: response.data.choices?.[0]?.message?.content || '' };
 }
 
 const PORT = process.env.PORT || 3000;
