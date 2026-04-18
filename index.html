@@ -866,7 +866,7 @@
         return `
           <div class="card" id="card-${key}">
             <div class="card-header">
-              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="width:${info.logoSize||80}px;height:${info.logoSize||80}px;object-fit:contain;border-radius:10px;"></div>
+              <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="max-width:${info.logoSize||80}px;max-height:${info.logoSize||80}px;width:auto;height:auto;object-fit:contain;border-radius:6px;"></div>
               <span class="confidence-badge">${info.confidence}%</span>
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
