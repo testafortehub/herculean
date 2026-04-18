@@ -17,7 +17,7 @@ const APIs = {
   gpt:       { key: process.env.GPT_API_KEY,        model: 'gpt-4o-mini' },
   gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-2.0-flash-001' },
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
-  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'deepseek/deepseek-chat' },
+  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'deepseek/deepseek-r1-distill-llama-8b' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
   togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
