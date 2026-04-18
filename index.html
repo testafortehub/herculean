@@ -687,16 +687,16 @@
 
     const LLM_ORDER = ['claude','gpt','gemini','groq','deepseek','openrouter','togetherai','cerebras','qwen','nemotron'];
     const LLM_INFO  = {
-      claude:     { name: 'Claude',    icon: '🧠', confidence: 92 },
-      gpt:        { name: 'GPT-4o',    icon: '⚡', confidence: 88 },
-      gemini:     { name: 'Gemini',    icon: '🎨', confidence: 85 },
-      groq:       { name: 'Groq',      icon: '🚀', confidence: 90 },
-      deepseek:   { name: 'DeepSeek',  icon: '🔮', confidence: 87 },
-      openrouter: { name: 'Llama 3',   icon: '🦙', confidence: 84 },
-      togetherai: { name: 'Mistral',   icon: '🌟', confidence: 86 },
-      cerebras:   { name: 'Cerebras',  icon: '⚙️', confidence: 83 },
-      qwen:       { name: 'Qwen 2.5',  icon: '🐉', confidence: 86 },
-      nemotron:   { name: 'Nemotron',  icon: '🔬', confidence: 88 },
+      claude:     { name: 'Claude',    logo: 'Model Logos/claude.png',     confidence: 92 },
+      gpt:        { name: 'GPT-4o',    logo: 'Model Logos/gpt4.png',       confidence: 88 },
+      gemini:     { name: 'Gemini',    logo: 'Model Logos/gemini.png',     confidence: 85 },
+      groq:       { name: 'Groq',      logo: 'Model Logos/groq.png',       confidence: 90 },
+      deepseek:   { name: 'DeepSeek',  logo: 'Model Logos/deepseek.png',   confidence: 87 },
+      openrouter: { name: 'Llama 3',   logo: 'Model Logos/llama.png',      confidence: 84 },
+      togetherai: { name: 'Mistral',   logo: 'Model Logos/mistral.png',    confidence: 86 },
+      cerebras:   { name: 'Cerebras',  logo: 'Model Logos/cerebras.png',   confidence: 83 },
+      qwen:       { name: 'Qwen 2.5',  logo: 'Model Logos/qwen.png',       confidence: 86 },
+      nemotron:   { name: 'Nemotron',  logo: 'Model Logos/nemotron.png',   confidence: 88 },
     };
 
     // ─── Search counter ────────────────────────────────────────────
@@ -787,7 +787,7 @@
         return `
           <div class="card" id="card-${key}">
             <div class="card-header">
-              <div class="card-name"><span>${info.icon}</span><span>${info.name}</span></div>
+              <div class="card-name"><img src="${info.logo}" alt="${info.name}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;"><span>${info.name}</span></div>
               <span class="confidence-badge">${info.confidence}%</span>
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
