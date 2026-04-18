@@ -47,13 +47,37 @@ app.post('/query', async (req, res) => {
 
   const responses = await Promise.allSettled(promises);
 
-  responses.forEach((res, idx) => {
-    const llmNames = ['claude', 'gpt', 'gemini', 'groq', 'deepseek', 'openrouter', 'togetherai', 'cerebras', 'qwen', 'nemotron'];
-    const detail = res.reason?.response?.data
-      ? JSON.stringify(res.reason.response.data).substring(0, 300)
-      : res.reason?.message;
-    results[llmNames[idx]] = res.status === 'fulfilled' ? res.value : { error: detail };
+  const llmNames = ['claude', 'gpt', 'gemini', 'groq', 'deepseek', 'openrouter', 'togetherai', 'cerebras', 'qwen', 'nemotron'];
+  responses.forEach((r, idx) => {
+    const detail = r.reason?.response?.data
+      ? JSON.stringify(r.reason.response.data).substring(0, 300)
+      : r.reason?.message;
+    results[llmNames[idx]] = r.status === 'fulfilled' ? r.value : { error: detail };
   });
+
+  // Build synthesis from successful responses
+  const successfulResponses = llmNames
+    .filter(k => results[k] && !results[k].error)
+    .map(k => `### ${results[k].name}\n${results[k].content}`)
+    .join('\n\n');
+
+  if (successfulResponses) {
+    try {
+      const synthResponse = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: 'anthropic/claude-3-haiku',
+        messages: [
+          { role: 'system', content: 'You synthesize responses from multiple AI models into one definitive answer. Be direct, comprehensive, and well-structured. Do not mention the individual models by name. Just provide the best possible answer.' },
+          { role: 'user', content: `Original question: ${query}\n\nResponses from 10 AI models:\n\n${successfulResponses}\n\nProvide a Herculean Synthesis — the single best answer distilled from all of the above.` }
+        ],
+        max_tokens: 800,
+      }, {
+        headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
+      });
+      results.synthesis = { content: synthResponse.data.choices[0].message.content };
+    } catch (e) {
+      results.synthesis = { error: 'Synthesis unavailable' };
+    }
+  }
 
   res.json(results);
 });

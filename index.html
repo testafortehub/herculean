@@ -164,6 +164,32 @@
       gap: 10px;
     }
 
+    /* ── Herculean Synthesis card ── */
+    #synthesisCard {
+      background: linear-gradient(135deg, #1a1200 0%, #0d0d0d 100%);
+      border: 2px solid #c9a227;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    #synthesisCard.visible { display: block; }
+    .synthesis-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .synthesis-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #c9a227;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .synthesis-body { color: #f0f0f0; font-size: 0.95rem; line-height: 1.7; }
+    .synthesis-body.loading { color: #888; font-style: italic; }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -609,6 +635,14 @@
       <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
     </div>
 
+    <div id="synthesisCard">
+      <div class="synthesis-header">
+        <span style="font-size:1.4rem">⚡</span>
+        <span class="synthesis-title">Herculean Synthesis</span>
+      </div>
+      <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses…</div>
+    </div>
+
     <div class="cards-grid" id="cardsGrid"></div>
 
   </div>
@@ -799,6 +833,11 @@
     }
 
     function showLoadingCards() {
+      const synthCard = document.getElementById('synthesisCard');
+      synthCard.classList.add('visible');
+      const synthBody = document.getElementById('synthesisBody');
+      synthBody.className = 'synthesis-body loading';
+      synthBody.textContent = 'Synthesizing all responses…';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
         if (card) card.classList.add('loading');
@@ -827,6 +866,16 @@
       const btn = document.getElementById('copyAllBtn');
       btn.disabled      = allParts.length === 0;
       btn.dataset.content = allParts.join('\n\n');
+
+      // Render synthesis
+      const synthBody = document.getElementById('synthesisBody');
+      if (data.synthesis && !data.synthesis.error) {
+        synthBody.className = 'synthesis-body';
+        synthBody.innerHTML = marked.parse(data.synthesis.content);
+      } else {
+        synthBody.className = 'synthesis-body loading';
+        synthBody.textContent = data.synthesis?.error || 'Synthesis unavailable.';
+      }
     }
 
     // ─── Query ────────────────────────────────────────────────────
