@@ -127,6 +127,35 @@
     .go-btn:active { transform: translateY(0); }
     .go-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
 
+    /* ── Mode Tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .mode-tab {
+      padding: 8px 14px;
+      background: transparent;
+      border: 2px solid #444;
+      color: #888;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .mode-tab:hover { border-color: #666; color: #aaa; }
+
+    .mode-tab.active {
+      border-color: #c9a227;
+      color: #c9a227;
+      background: rgba(201, 162, 39, 0.1);
+    }
+
     /* ── Search counter ── */
     .search-meta {
       display: flex;
@@ -768,6 +797,13 @@
 
     <div class="search-section">
       <p class="tagline">Ask 10 Leading AI LLMs At Once — Compare, Copy, Conquer.</p>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="synthesis" onclick="switchMode('synthesis')">Synthesis</button>
+        <button class="mode-tab" data-mode="debate" onclick="switchMode('debate')">Debate</button>
+        <button class="mode-tab" data-mode="consistency" onclick="switchMode('consistency')">Consistency</button>
+        <button class="mode-tab" data-mode="code" onclick="switchMode('code')">Code Review</button>
+        <button class="mode-tab" data-mode="optimizer" onclick="switchMode('optimizer')">Prompt Optimizer</button>
+      </div>
       <div class="search-bar">
         <input
           id="queryInput"
@@ -1473,6 +1509,53 @@
     }
 
     window.__clearDaily = () => { localStorage.removeItem('herc_usage'); updateCounterUI(); console.log('Daily counter cleared'); };
+
+    // ─── Mode Switching ────────────────────────────────────────────
+    const modeConfig = {
+      synthesis: {
+        label: 'Synthesis',
+        placeholder: 'Ask 10 LLMs and synthesize one definitive answer',
+        height: '100px'
+      },
+      debate: {
+        label: 'Debate',
+        placeholder: 'What topic or claim do you want explored from multiple angles?',
+        height: '100px'
+      },
+      consistency: {
+        label: 'Consistency',
+        placeholder: 'Enter a claim or question to check for LLM agreement',
+        height: '100px'
+      },
+      code: {
+        label: 'Code Review',
+        placeholder: 'Paste code for security, performance, readability & architecture review',
+        height: '180px'
+      },
+      optimizer: {
+        label: 'Prompt Optimizer',
+        placeholder: 'Enter your prompt — get optimization suggestions from all 10 LLMs',
+        height: '140px'
+      }
+    };
+
+    let currentMode = 'synthesis';
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const input = document.getElementById('queryInput');
+      const config = modeConfig[mode];
+
+      input.placeholder = config.placeholder;
+      input.style.height = config.height;
+      input.value = '';
+
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+
+      document.getElementById('promptScoreDisplay').style.display = 'none';
+    }
 
     // ─── Real-time Prompt Quality Display ──────────────────────────
     document.getElementById('queryInput').addEventListener('input', () => {
