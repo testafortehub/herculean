@@ -239,6 +239,16 @@
     }
     .synthesis-body { color: #f0f0f0; font-size: 0.95rem; line-height: 1.8; }
     .synthesis-body.loading { color: #888; font-style: italic; }
+    .synthesis-body.loading::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
     .synthesis-body p { margin-bottom: 12px; }
     .synthesis-body p:last-child { margin-bottom: 0; }
     .synthesis-body ul, .synthesis-body ol { padding-left: 20px; margin-bottom: 12px; }
@@ -722,7 +732,7 @@
     .history-toggle {
       position: fixed;
       left: 20px;
-      top: 260px;
+      top: 280px;
       padding: 8px 12px;
       background: #0e0e1c;
       border: 1px solid #c9a227;
@@ -787,9 +797,16 @@
         <span style="font-size:1.4rem">⚡</span>
         <span class="synthesis-title">Herculean Synthesis</span>
       </div>
-      <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses…</div>
+      <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses</div>
       <div class="card-footer" style="margin-top:14px;">
-        <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
+        <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
+          <div class="card-footer-exports">
+            <button class="copy-btn" id="expSynthMd" onclick="exportMarkdownSynth()" disabled>📋 MD</button>
+            <button class="copy-btn" id="expSynthJson" onclick="exportJSONSynth()" disabled>{} JSON</button>
+            <button class="copy-btn" id="expSynthCsv" onclick="exportCSVSynth()" disabled>📊 CSV</button>
+          </div>
+          <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
+        </div>
       </div>
     </div>
 
@@ -866,7 +883,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()" style="display:none">📜 History</button>
+  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">📜 History</button>
   <div class="history-sidebar" id="historySidebar">
     <div class="history-header">Search History</div>
     <input type="text" class="history-search" id="historySearch" placeholder="Filter..." onkeyup="filterHistory()">
@@ -1018,7 +1035,7 @@
       synthCard.classList.add('visible');
       const synthBody = document.getElementById('synthesisBody');
       synthBody.className = 'synthesis-body loading';
-      synthBody.textContent = 'Synthesizing all responses…';
+      synthBody.textContent = 'Synthesizing all responses';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
         if (card) card.classList.add('loading');
@@ -1064,6 +1081,9 @@
         synthBody.className = 'synthesis-body';
         synthBody.innerHTML = marked.parse(data.synthesis.content);
         synthBtn.disabled   = false;
+        document.getElementById('expSynthMd').disabled = false;
+        document.getElementById('expSynthJson').disabled = false;
+        document.getElementById('expSynthCsv').disabled = false;
       } else {
         synthBody.className = 'synthesis-body loading';
         synthBody.textContent = data.synthesis?.error || 'Synthesis unavailable.';
@@ -1281,6 +1301,27 @@
       saveQueryToHistory(lastQuery);
     }
 
+    function exportMarkdownSynth() {
+      const synthBody = document.getElementById('synthesisBody');
+      if (!synthBody.textContent || !lastQuery) return;
+      const md = `# Herculean Synthesis\n\n**Query:** ${lastQuery}\n\n${synthBody.textContent}`;
+      downloadFile(md, 'herculean-synthesis.md', 'text/markdown');
+    }
+
+    function exportJSONSynth() {
+      const synthBody = document.getElementById('synthesisBody');
+      if (!synthBody.textContent || !lastQuery) return;
+      const json = JSON.stringify({ query: lastQuery, synthesis: synthBody.textContent }, null, 2);
+      downloadFile(json, 'herculean-synthesis.json', 'application/json');
+    }
+
+    function exportCSVSynth() {
+      const synthBody = document.getElementById('synthesisBody');
+      if (!synthBody.textContent || !lastQuery) return;
+      const csv = `Query,Synthesis\n"${lastQuery.replace(/"/g, '""')}","${synthBody.textContent.replace(/"/g, '""')}"`;
+      downloadFile(csv, 'herculean-synthesis.csv', 'text/csv');
+    }
+
     function downloadFile(content, filename, type) {
       const blob = new Blob([content], { type });
       const url = URL.createObjectURL(blob);
@@ -1357,6 +1398,8 @@
       const sidebar = document.getElementById('historySidebar');
       sidebar.classList.toggle('visible');
     }
+
+    window.__clearDaily = () => { localStorage.removeItem('herc_usage'); updateCounterUI(); console.log('Daily counter cleared'); };
 
     // ─── Init ─────────────────────────────────────────────────────
     renderEmptyCards();
