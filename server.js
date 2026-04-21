@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const { exec } = require('child_process');
 
 const app = express();
 app.use(express.json());
@@ -290,4 +291,10 @@ async function callNemotron(query) {
 }
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  const url = `http://localhost:${PORT}`;
+  const platform = process.platform;
+  let openCmd = platform === 'win32' ? `start ${url}` : platform === 'darwin' ? `open ${url}` : `xdg-open ${url}`;
+  exec(openCmd, (err) => { if (err) console.log('Browser auto-open skipped'); });
+});
