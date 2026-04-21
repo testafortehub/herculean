@@ -309,6 +309,26 @@
     .copy-btn:disabled { opacity: 0.3; cursor: default; }
     .copy-btn.copied { color: #4caf50; border-color: #4caf50; }
 
+    .card-footer-exports {
+      display: flex;
+      gap: 6px;
+    }
+
+    .export-card-btn {
+      padding: 4px 10px;
+      background: transparent;
+      border: 1px solid #666;
+      color: #aaa;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .export-card-btn:hover { border-color: #c9a227; color: #c9a227; }
+    .export-card-btn:disabled { opacity: 0.3; cursor: default; }
+
     /* ── Skeleton ── */
     .skeleton {
       background: linear-gradient(90deg, #141428 25%, #1e1e3a 50%, #141428 75%);
@@ -716,7 +736,7 @@
     .history-toggle {
       position: fixed;
       left: 20px;
-      top: 20px;
+      top: 100px;
       padding: 8px 12px;
       background: #0e0e1c;
       border: 1px solid #c9a227;
@@ -776,16 +796,6 @@
       <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
     </div>
 
-    <div class="metrics-tab" id="metricsTab">
-      <div class="metrics-header">📊 Metrics</div>
-      <div class="metrics-grid" id="metricsGrid"></div>
-      <div class="export-buttons">
-        <button class="export-btn" id="exportMarkdownBtn" onclick="exportMarkdown()" disabled>📋 Markdown</button>
-        <button class="export-btn" id="exportJsonBtn" onclick="exportJSON()" disabled>{}  JSON</button>
-        <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
-      </div>
-    </div>
-
     <div id="synthesisCard">
       <div class="synthesis-header">
         <span style="font-size:1.4rem">⚡</span>
@@ -798,6 +808,16 @@
     </div>
 
     <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="metrics-tab" id="metricsTab">
+      <div class="metrics-header">📊 Metrics</div>
+      <div class="metrics-grid" id="metricsGrid"></div>
+      <div class="export-buttons">
+        <button class="export-btn" id="exportMarkdownBtn" onclick="exportMarkdown()" disabled>📋 Markdown</button>
+        <button class="export-btn" id="exportJsonBtn" onclick="exportJSON()" disabled>{}  JSON</button>
+        <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
+      </div>
+    </div>
 
   </div>
 
@@ -993,7 +1013,14 @@
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
             <div class="card-footer">
-              <button class="copy-btn" id="copy-${key}" onclick="copyCard('${key}')" disabled>Copy</button>
+              <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
+                <div class="card-footer-exports">
+                  <button class="export-card-btn" id="expMd-${key}" onclick="exportMarkdownModel('${key}')" disabled title="Export as Markdown">📋 MD</button>
+                  <button class="export-card-btn" id="expJson-${key}" onclick="exportJSONModel('${key}')" disabled title="Export as JSON">{} JSON</button>
+                  <button class="export-card-btn" id="expCsv-${key}" onclick="exportCSVModel('${key}')" disabled title="Export as CSV">📊 CSV</button>
+                </div>
+                <button class="copy-btn" id="copy-${key}" onclick="copyCard('${key}')" disabled>Copy</button>
+              </div>
             </div>
           </div>`;
       }).join('');
@@ -1012,6 +1039,9 @@
         body.className = 'card-body';
         body.innerHTML = Array(4).fill('<div class="skeleton"></div>').join('');
         document.getElementById(`copy-${key}`).disabled = true;
+        document.getElementById(`expMd-${key}`).disabled = true;
+        document.getElementById(`expJson-${key}`).disabled = true;
+        document.getElementById(`expCsv-${key}`).disabled = true;
       });
     }
 
@@ -1022,12 +1052,18 @@
         if (card) card.classList.remove('loading');
         const body    = document.getElementById(`body-${key}`);
         const copyBtn = document.getElementById(`copy-${key}`);
+        const expMdBtn = document.getElementById(`expMd-${key}`);
+        const expJsonBtn = document.getElementById(`expJson-${key}`);
+        const expCsvBtn = document.getElementById(`expCsv-${key}`);
         const r = data[key];
         if (!r)      { body.className = 'card-body error'; body.textContent = 'No response received.'; return; }
         if (r.error) { body.className = 'card-body error'; body.textContent = `Error: ${r.error}`;     return; }
         body.className   = 'card-body';
         body.innerHTML   = marked.parse(r.content || '(empty response)');
         copyBtn.disabled = false;
+        expMdBtn.disabled = false;
+        expJsonBtn.disabled = false;
+        expCsvBtn.disabled = false;
         allParts.push(`=== ${LLM_INFO[key].name} ===\n${r.content}`);
       });
       const btn = document.getElementById('copyAllBtn');
@@ -1209,6 +1245,33 @@
         }
       });
       downloadFile(csv, 'herculean-results.csv', 'text/csv');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function exportMarkdownModel(key) {
+      if (!lastResults || !lastQuery) return;
+      const r = lastResults[key];
+      if (!r || r.error) { showToast('No data for this model'); return; }
+      const md = `# ${r.name} Response\n\n**Query:** ${lastQuery}\n\n${r.content}`;
+      downloadFile(md, `herculean-${key}.md`, 'text/markdown');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function exportJSONModel(key) {
+      if (!lastResults || !lastQuery) return;
+      const r = lastResults[key];
+      if (!r || r.error) { showToast('No data for this model'); return; }
+      const json = JSON.stringify({ query: lastQuery, model: r.name, response: r, responseTime: r.responseTime, tokens: r.tokens, cost: r.cost }, null, 2);
+      downloadFile(json, `herculean-${key}.json`, 'application/json');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function exportCSVModel(key) {
+      if (!lastResults || !lastQuery) return;
+      const r = lastResults[key];
+      if (!r || r.error) { showToast('No data for this model'); return; }
+      const csv = `Query,Model,Response Time (ms),Tokens,Cost\n"${lastQuery.replace(/"/g, '""')}","${r.name}",${r.responseTime || 0},${(r.tokens?.prompt || 0) + (r.tokens?.completion || 0)},${(r.cost || 0).toFixed(4)}`;
+      downloadFile(csv, `herculean-${key}.csv`, 'text/csv');
       saveQueryToHistory(lastQuery);
     }
 
