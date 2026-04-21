@@ -76,7 +76,7 @@ app.post('/query', async (req, res) => {
 
   if (successfulResponses) {
     try {
-      const synthesisPtompts = {
+      const synthesisPrompts = {
         synthesis: {
           system: 'You synthesize responses from multiple AI models into one definitive answer. Be direct, comprehensive, and well-structured. Do not mention the individual models by name. Just provide the best possible answer.',
           user: `Original question: ${query}\n\nResponses from 10 AI models:\n\n${successfulResponses}\n\nProvide a Herculean Synthesis — the single best answer distilled from all of the above.`
@@ -99,7 +99,7 @@ app.post('/query', async (req, res) => {
         }
       };
 
-      const synthPrompt = synthesisPtompts[mode] || synthesisPtompts.synthesis;
+      const synthPrompt = synthesisPrompts[mode] || synthesisPrompts.synthesis;
       const synthResponse = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: 'anthropic/claude-3-haiku',
         messages: [
