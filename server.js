@@ -27,8 +27,18 @@ const APIs = {
 
 // Query handler
 app.post('/query', async (req, res) => {
-  const { query } = req.body;
+  const { query, mode = 'synthesis' } = req.body;
   if (!query) return res.status(400).json({ error: 'No query provided' });
+
+  const modeHandlers = {
+    synthesis: (q) => q,
+    debate: (q) => `Argue multiple perspectives on this: ${q}`,
+    consistency: (q) => `Evaluate the consistency of this claim: "${q}"`,
+    code: (q) => `Review this code for security, performance, readability, and architecture issues:\n\n${q}`,
+    optimizer: (q) => `Critically analyze and suggest improvements for this prompt:\n\n"${q}"`
+  };
+
+  const processedQuery = modeHandlers[mode] ? modeHandlers[mode](query) : query;
 
   const results = {};
   const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
@@ -49,7 +59,7 @@ app.post('/query', async (req, res) => {
   await Promise.all(calls.map(async ({ key, fn, ms }) => {
     const startTime = Date.now();
     try {
-      const result = await Promise.race([fn(query), timeout(ms)]);
+      const result = await Promise.race([fn(processedQuery), timeout(ms)]);
       results[key] = { ...result, responseTime: Date.now() - startTime };
     } catch (e) {
       const detail = e.response?.data
@@ -66,11 +76,35 @@ app.post('/query', async (req, res) => {
 
   if (successfulResponses) {
     try {
+      const synthesisPtompts = {
+        synthesis: {
+          system: 'You synthesize responses from multiple AI models into one definitive answer. Be direct, comprehensive, and well-structured. Do not mention the individual models by name. Just provide the best possible answer.',
+          user: `Original question: ${query}\n\nResponses from 10 AI models:\n\n${successfulResponses}\n\nProvide a Herculean Synthesis — the single best answer distilled from all of the above.`
+        },
+        debate: {
+          system: 'Synthesize these diverse perspectives into a balanced summary. Identify areas of agreement, disagreement, and the strongest arguments from each angle. Be objective and fair to all viewpoints.',
+          user: `Original topic: ${query}\n\nPerspectives from 10 AI models:\n\n${successfulResponses}\n\nSynthesized Debate Summary:\n1. Areas of agreement\n2. Key disagreements\n3. Strongest arguments per perspective`
+        },
+        consistency: {
+          system: 'Analyze these responses to identify consistency and inconsistency patterns. Flag any contradictions or hallucinations. Determine which models agree and which diverge.',
+          user: `Claim to verify: "${query}"\n\nResponses from 10 AI models:\n\n${successfulResponses}\n\nConsistency Analysis:\n- Agreement rate\n- Key contradictions\n- Confidence assessment`
+        },
+        code: {
+          system: 'Synthesize code review feedback from multiple models into a comprehensive security and quality report. Prioritize by severity (critical → minor).',
+          user: `Code review findings from 10 AI models:\n\n${successfulResponses}\n\nComprehensive Code Review Summary:\n1. Critical Issues\n2. Performance Issues\n3. Readability/Architecture\n4. Best Practices`
+        },
+        optimizer: {
+          system: 'Synthesize prompt improvement suggestions into one definitive optimization guide. Highlight the most impactful improvements.',
+          user: `Original prompt: "${query}"\n\nOptimization suggestions from 10 AI models:\n\n${successfulResponses}\n\nTop 5 Improvements for Prompt Optimization`
+        }
+      };
+
+      const synthPrompt = synthesisPtompts[mode] || synthesisPtompts.synthesis;
       const synthResponse = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: 'anthropic/claude-3-haiku',
         messages: [
-          { role: 'system', content: 'You synthesize responses from multiple AI models into one definitive answer. Be direct, comprehensive, and well-structured. Do not mention the individual models by name. Just provide the best possible answer.' },
-          { role: 'user', content: `Original question: ${query}\n\nResponses from 10 AI models:\n\n${successfulResponses}\n\nProvide a Herculean Synthesis — the single best answer distilled from all of the above.` }
+          { role: 'system', content: synthPrompt.system },
+          { role: 'user', content: synthPrompt.user }
         ],
         max_tokens: 800,
       }, {

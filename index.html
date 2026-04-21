@@ -1151,7 +1151,7 @@
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify({ query }),
+          body   : JSON.stringify({ query, mode: currentMode }),
         });
         if (!resp.ok) throw new Error(`Server responded ${resp.status}`);
         renderResults(await resp.json());
