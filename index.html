@@ -779,6 +779,9 @@
         >
         <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
       </div>
+      <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
+        Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
+      </div>
       <div class="search-meta">
         <div class="search-counter">
           <span id="counterText">5 free searches today</span>
@@ -1178,6 +1181,64 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
+    // ─── PROMPT QUALITY SCORE ─────────────────────────────────────
+    function scorePromptQuality(prompt) {
+      let score = 5;
+      const words = prompt.trim().split(/\s+/).length;
+      const chars = prompt.length;
+      const sentences = (prompt.match(/[.!?]/g) || []).length;
+      const avgWordLen = chars / Math.max(1, words);
+
+      // Length scoring: 15-100 words is ideal
+      if (words >= 15 && words <= 100) {
+        score += 2;
+      } else if (words >= 10 && words < 15) {
+        score += 1;
+      } else if (words > 100 && words <= 200) {
+        score += 0.5;
+      } else if (words < 5 || words > 200) {
+        score -= 1;
+      }
+
+      // Specificity keywords (higher reward for action-oriented terms)
+      const specificityKeywords = ['compare', 'explain', 'analyze', 'define', 'summarize', 'list', 'describe', 'elaborate', 'clarify', 'detail', 'provide', 'generate', 'create', 'suggest', 'recommend'];
+      const hasSpecificity = specificityKeywords.filter(k => prompt.toLowerCase().includes(k)).length;
+      score += Math.min(hasSpecificity * 0.8, 2);
+
+      // Question clarity (presence of question marks)
+      if (prompt.includes('?')) {
+        score += 1;
+      }
+
+      // Punctuation variety (good sign of structured thought)
+      const punctuationMarks = (prompt.match(/[.!?,;:—-]/g) || []).length;
+      if (punctuationMarks >= 2) {
+        score += 0.5;
+      }
+
+      // Capitalization check (proper capitalization = more careful)
+      const capitalizedWords = (prompt.match(/\b[A-Z][a-z]+/g) || []).length;
+      if (capitalizedWords > 0) {
+        score += 0.5;
+      }
+
+      // Word variety (repeat word penalty)
+      const uniqueWords = new Set(prompt.toLowerCase().split(/\s+/)).size;
+      const repetitionRatio = uniqueWords / Math.max(1, words);
+      if (repetitionRatio > 0.7) {
+        score += 1;
+      } else if (repetitionRatio < 0.5) {
+        score -= 0.5;
+      }
+
+      // Avoid vague single-word or very generic prompts
+      if (words === 1) score -= 2;
+      if (prompt.toLowerCase() === prompt.toLowerCase().trim() && words < 3) score -= 1;
+
+      // Cap score at 10
+      return Math.max(0, Math.min(10, score));
+    }
+
     // ─── METRICS & EXPORT ──────────────────────────────────────────
     function renderMetrics(data) {
       const metricsTab = document.getElementById('metricsTab');
@@ -1200,7 +1261,19 @@
         }
       });
 
-      metricsGrid.innerHTML = metrics.map(m => `
+      // Prompt Quality Score
+      const promptScore = scorePromptQuality(lastQuery);
+      const promptScoreColor = promptScore >= 8 ? '#4caf50' : promptScore >= 6 ? '#c9a227' : '#ff9800';
+
+      metricsGrid.innerHTML = `
+        <div class="metric-item" style="background: rgba(255,152,0,0.1); border-color: ${promptScoreColor};">
+          <div class="metric-label">Prompt Quality</div>
+          <div class="metric-value" style="color: ${promptScoreColor};">${promptScore.toFixed(1)}/10</div>
+          <div class="metric-sub" style="color: ${promptScoreColor};">${promptScore >= 8 ? 'Excellent' : promptScore >= 6 ? 'Good' : 'Fair'}</div>
+        </div>
+      `;
+
+      metricsGrid.innerHTML += metrics.map(m => `
         <div class="metric-item">
           <div class="metric-label">${m.name}</div>
           <div class="metric-value">${m.time}ms</div>
@@ -1400,6 +1473,22 @@
     }
 
     window.__clearDaily = () => { localStorage.removeItem('herc_usage'); updateCounterUI(); console.log('Daily counter cleared'); };
+
+    // ─── Real-time Prompt Quality Display ──────────────────────────
+    document.getElementById('queryInput').addEventListener('input', () => {
+      const query = document.getElementById('queryInput').value.trim();
+      const display = document.getElementById('promptScoreDisplay');
+      const scoreValue = document.getElementById('promptScoreValue');
+      if (!query) {
+        display.style.display = 'none';
+        return;
+      }
+      const score = scorePromptQuality(query);
+      const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
+      scoreValue.textContent = score.toFixed(1);
+      scoreValue.style.color = color;
+      display.style.display = 'block';
+    });
 
     // ─── Init ─────────────────────────────────────────────────────
     renderEmptyCards();
