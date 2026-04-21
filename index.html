@@ -314,20 +314,6 @@
       gap: 6px;
     }
 
-    .export-card-btn {
-      padding: 4px 10px;
-      background: transparent;
-      border: 1px solid #666;
-      color: #aaa;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.65rem;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .export-card-btn:hover { border-color: #c9a227; color: #c9a227; }
-    .export-card-btn:disabled { opacity: 0.3; cursor: default; }
 
     /* ── Skeleton ── */
     .skeleton {
@@ -813,6 +799,7 @@
       <div class="metrics-header">📊 Metrics</div>
       <div class="metrics-grid" id="metricsGrid"></div>
       <div class="export-buttons">
+        <button class="copy-btn" id="copyMetricsBtn" onclick="copyMetrics()" disabled>Copy</button>
         <button class="export-btn" id="exportMarkdownBtn" onclick="exportMarkdown()" disabled>📋 Markdown</button>
         <button class="export-btn" id="exportJsonBtn" onclick="exportJSON()" disabled>{}  JSON</button>
         <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
@@ -1015,9 +1002,9 @@
             <div class="card-footer">
               <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
                 <div class="card-footer-exports">
-                  <button class="export-card-btn" id="expMd-${key}" onclick="exportMarkdownModel('${key}')" disabled title="Export as Markdown">📋 MD</button>
-                  <button class="export-card-btn" id="expJson-${key}" onclick="exportJSONModel('${key}')" disabled title="Export as JSON">{} JSON</button>
-                  <button class="export-card-btn" id="expCsv-${key}" onclick="exportCSVModel('${key}')" disabled title="Export as CSV">📊 CSV</button>
+                  <button class="copy-btn" id="expMd-${key}" onclick="exportMarkdownModel('${key}')" disabled>📋 MD</button>
+                  <button class="copy-btn" id="expJson-${key}" onclick="exportJSONModel('${key}')" disabled>{} JSON</button>
+                  <button class="copy-btn" id="expCsv-${key}" onclick="exportCSVModel('${key}')" disabled>📊 CSV</button>
                 </div>
                 <button class="copy-btn" id="copy-${key}" onclick="copyCard('${key}')" disabled>Copy</button>
               </div>
@@ -1213,6 +1200,26 @@
 
       metricsTab.classList.add('visible');
       document.querySelectorAll('.export-btn').forEach(btn => btn.disabled = false);
+      document.getElementById('copyMetricsBtn').disabled = false;
+      saveQueryToHistory(lastQuery);
+    }
+
+    function copyMetrics() {
+      if (!lastResults || !lastQuery) return;
+      let text = `HERCULEAN SEARCH RESULTS\nQuery: ${lastQuery}\n\n`;
+      LLM_ORDER.forEach(key => {
+        const r = lastResults[key];
+        if (r && !r.error) {
+          const tokens = (r.tokens?.prompt || 0) + (r.tokens?.completion || 0);
+          text += `${r.name}: ${r.responseTime}ms | ${tokens} tokens | $${r.cost.toFixed(4)}\n`;
+        }
+      });
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyMetricsBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      }).catch(() => showToast('Copy failed'));
     }
 
     function exportMarkdown() {
@@ -1225,7 +1232,6 @@
         }
       });
       downloadFile(md, 'herculean-results.md', 'text/markdown');
-      saveQueryToHistory(lastQuery);
     }
 
     function exportJSON() {
