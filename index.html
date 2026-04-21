@@ -631,6 +631,102 @@
 
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* ── Metrics Tab ── */
+    .metrics-tab {
+      display: none;
+      background: #0e0e1c;
+      border: 2px solid #ffffff;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .metrics-tab.visible { display: block; }
+    .metrics-header { font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .metric-item {
+      background: #111122;
+      border: 1px solid #333355;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.8rem;
+    }
+    .metric-label { color: #888; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+    .metric-value { color: #c9a227; font-weight: 700; font-size: 0.9rem; }
+    .metric-sub { color: #aaa; font-size: 0.7rem; margin-top: 2px; }
+
+    /* ── Export Buttons ── */
+    .export-buttons { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .export-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #c9a227;
+      border-radius: 8px;
+      color: #c9a227;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .export-btn:hover { background: rgba(201,162,39,0.1); }
+    .export-btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── History Sidebar ── */
+    .history-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: #111122;
+      border-right: 2px solid #333355;
+      padding: 20px;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 50;
+    }
+    .history-sidebar.visible { display: flex; }
+    .history-header { font-size: 0.95rem; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; }
+    .history-search {
+      width: 100%;
+      padding: 8px 12px;
+      background: #0a0a0f;
+      border: 1px solid #333355;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 0.8rem;
+    }
+    .history-search::placeholder { color: #666; }
+    .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .history-item {
+      padding: 10px;
+      background: #0a0a0f;
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-item:hover { border-color: #c9a227; color: #c9a227; }
+    .history-toggle {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      padding: 8px 12px;
+      background: #0e0e1c;
+      border: 1px solid #c9a227;
+      border-radius: 6px;
+      color: #c9a227;
+      font-size: 0.75rem;
+      cursor: pointer;
+      z-index: 51;
+    }
+
     /* ── Footer ── */
     .footer {
       text-align: center;
@@ -678,6 +774,16 @@
     <div class="results-header">
       <span class="results-label">Responses</span>
       <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
+    </div>
+
+    <div class="metrics-tab" id="metricsTab">
+      <div class="metrics-header">📊 Metrics</div>
+      <div class="metrics-grid" id="metricsGrid"></div>
+      <div class="export-buttons">
+        <button class="export-btn" id="exportMarkdownBtn" onclick="exportMarkdown()" disabled>📋 Markdown</button>
+        <button class="export-btn" id="exportJsonBtn" onclick="exportJSON()" disabled>{}  JSON</button>
+        <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
+      </div>
     </div>
 
     <div id="synthesisCard">
@@ -753,6 +859,13 @@
 
   <div class="toast" id="toast"></div>
 
+  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()" style="display:none">📜 History</button>
+  <div class="history-sidebar" id="historySidebar">
+    <div class="history-header">Search History</div>
+    <input type="text" class="history-search" id="historySearch" placeholder="Filter..." onkeyup="filterHistory()">
+    <div class="history-list" id="historyList"></div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!=="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -783,6 +896,9 @@
       qwen:       { name: 'Qwen 2.5',  logo: 'Model Logos/qwen.png',       confidence: 86 },
       nemotron:   { name: 'Nemotron',  logo: 'Model Logos/nemotron.png',   confidence: 88, logoSize: 110 },
     };
+
+    let lastQuery = '';
+    let lastResults = {};
 
     // ─── Search counter ────────────────────────────────────────────
     function getUsage() {
@@ -930,6 +1046,9 @@
         synthBody.textContent = data.synthesis?.error || 'Synthesis unavailable.';
         synthBtn.disabled   = true;
       }
+
+      // Render metrics and enable exports
+      renderMetrics(data);
     }
 
     // ─── Query ────────────────────────────────────────────────────
@@ -942,6 +1061,7 @@
       saveUsage(usage);
       updateCounterUI();
       posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count });
+      lastQuery = query;
       document.getElementById('goBtn').disabled = true;
       document.getElementById('copyAllBtn').disabled = true;
       showLoadingCards();
@@ -1015,8 +1135,164 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
+    // ─── METRICS & EXPORT ──────────────────────────────────────────
+    function renderMetrics(data) {
+      const metricsTab = document.getElementById('metricsTab');
+      const metricsGrid = document.getElementById('metricsGrid');
+      lastResults = data;
+
+      let totalTime = 0, totalTokens = 0, totalCost = 0;
+      const metrics = [];
+
+      LLM_ORDER.forEach(key => {
+        const r = data[key];
+        if (r && !r.error) {
+          const time = r.responseTime || 0;
+          const tokens = (r.tokens?.prompt || 0) + (r.tokens?.completion || 0);
+          const cost = r.cost || 0;
+          totalTime += time;
+          totalTokens += tokens;
+          totalCost += cost;
+          metrics.push({ key, time, tokens, cost, name: r.name });
+        }
+      });
+
+      metricsGrid.innerHTML = metrics.map(m => `
+        <div class="metric-item">
+          <div class="metric-label">${m.name}</div>
+          <div class="metric-value">${m.time}ms</div>
+          <div class="metric-sub">${m.tokens} tokens</div>
+          <div class="metric-sub">$${m.cost.toFixed(4)}</div>
+        </div>
+      `).join('');
+
+      metricsGrid.innerHTML += `
+        <div class="metric-item" style="background: rgba(201,162,39,0.1); border-color: #c9a227;">
+          <div class="metric-label">Total</div>
+          <div class="metric-value">${totalTime}ms</div>
+          <div class="metric-sub">${totalTokens} tokens</div>
+          <div class="metric-sub">$${totalCost.toFixed(4)}</div>
+        </div>
+      `;
+
+      metricsTab.classList.add('visible');
+      document.querySelectorAll('.export-btn').forEach(btn => btn.disabled = false);
+    }
+
+    function exportMarkdown() {
+      if (!lastResults || !lastQuery) return;
+      let md = `# Herculean Synthesis Results\n\n**Query:** ${lastQuery}\n\n`;
+      LLM_ORDER.forEach(key => {
+        const r = lastResults[key];
+        if (r && !r.error) {
+          md += `## ${r.name}\n${r.content}\n\n`;
+        }
+      });
+      downloadFile(md, 'herculean-results.md', 'text/markdown');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function exportJSON() {
+      if (!lastResults || !lastQuery) return;
+      const json = JSON.stringify({ query: lastQuery, results: lastResults }, null, 2);
+      downloadFile(json, 'herculean-results.json', 'application/json');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function exportCSV() {
+      if (!lastResults || !lastQuery) return;
+      let csv = 'Query,Model,Response Time (ms),Tokens,Cost\n';
+      LLM_ORDER.forEach(key => {
+        const r = lastResults[key];
+        if (r && !r.error) {
+          csv += `"${lastQuery.replace(/"/g, '""')}","${r.name}",${r.responseTime || 0},${(r.tokens?.prompt || 0) + (r.tokens?.completion || 0)},${(r.cost || 0).toFixed(4)}\n`;
+        }
+      });
+      downloadFile(csv, 'herculean-results.csv', 'text/csv');
+      saveQueryToHistory(lastQuery);
+    }
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${filename}`);
+    }
+
+    // ─── HISTORY (IndexedDB) ────────────────────────────────────────
+    let historyDb = null;
+    let allHistory = [];
+
+    function initHistory() {
+      const req = indexedDB.open('HerculeanDB', 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('queries')) {
+          db.createObjectStore('queries', { keyPath: 'id', autoIncrement: true });
+        }
+      };
+      req.onsuccess = e => {
+        historyDb = e.target.result;
+        loadHistory();
+      };
+      req.onerror = () => console.log('IndexedDB error');
+    }
+
+    function saveQueryToHistory(query) {
+      if (!historyDb || !query.trim()) return;
+      const tx = historyDb.transaction(['queries'], 'readwrite');
+      const store = tx.objectStore('queries');
+      store.add({ query: query.trim(), timestamp: Date.now() });
+      loadHistory();
+    }
+
+    function loadHistory() {
+      if (!historyDb) return;
+      const tx = historyDb.transaction(['queries'], 'readonly');
+      const store = tx.objectStore('queries');
+      const req = store.getAll();
+      req.onsuccess = e => {
+        allHistory = e.target.result.sort((a, b) => b.timestamp - a.timestamp);
+        renderHistory(allHistory);
+      };
+    }
+
+    function renderHistory(items) {
+      const list = document.getElementById('historyList');
+      list.innerHTML = items.map((h, i) => `
+        <div class="history-item" onclick="loadHistoryQuery('${h.query.replace(/'/g, "\\'")}')" title="${h.query}">
+          ${h.query.substring(0, 40)}${h.query.length > 40 ? '…' : ''}
+        </div>
+      `).join('');
+    }
+
+    function filterHistory() {
+      const search = document.getElementById('historySearch').value.toLowerCase();
+      const filtered = allHistory.filter(h => h.query.toLowerCase().includes(search));
+      renderHistory(filtered);
+    }
+
+    function loadHistoryQuery(query) {
+      document.getElementById('queryInput').value = query;
+      toggleHistory();
+      runQuery();
+    }
+
+    function toggleHistory() {
+      const sidebar = document.getElementById('historySidebar');
+      sidebar.classList.toggle('visible');
+    }
+
     // ─── Init ─────────────────────────────────────────────────────
     renderEmptyCards();
+    initHistory();
+    document.getElementById('historyToggle').style.display = '';
     updateCounterUI();
     setupPricing();
   </script>

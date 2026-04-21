@@ -47,13 +47,15 @@ app.post('/query', async (req, res) => {
   ];
 
   await Promise.all(calls.map(async ({ key, fn, ms }) => {
+    const startTime = Date.now();
     try {
-      results[key] = await Promise.race([fn(query), timeout(ms)]);
+      const result = await Promise.race([fn(query), timeout(ms)]);
+      results[key] = { ...result, responseTime: Date.now() - startTime };
     } catch (e) {
       const detail = e.response?.data
         ? JSON.stringify(e.response.data).substring(0, 300)
         : e.message;
-      results[key] = { error: detail };
+      results[key] = { error: detail, responseTime: Date.now() - startTime };
     }
   }));
 
@@ -91,7 +93,13 @@ async function callClaude(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
   });
-  return { name: 'Claude', icon: '🧠', confidence: 92, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Claude', icon: '🧠', confidence: 92,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.07 / 1000000 + (usage.completion_tokens || 0) * 0.30 / 1000000
+  };
 }
 
 async function callGPT(query) {
@@ -102,7 +110,13 @@ async function callGPT(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gpt.key}` },
   });
-  return { name: 'GPT', icon: '⚡', confidence: 88, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'GPT', icon: '⚡', confidence: 88,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.15 / 1000000 + (usage.completion_tokens || 0) * 0.60 / 1000000
+  };
 }
 
 async function callGemini(query) {
@@ -113,7 +127,13 @@ async function callGemini(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gemini.key}` },
   });
-  return { name: 'Gemini', icon: '🎨', confidence: 85, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Gemini', icon: '🎨', confidence: 85,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
+  };
 }
 
 async function callGroq(query) {
@@ -124,7 +144,13 @@ async function callGroq(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.groq.key}` },
   });
-  return { name: 'Groq', icon: '⚡', confidence: 90, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Groq', icon: '⚡', confidence: 90,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: 0
+  };
 }
 
 async function callDeepSeek(query) {
@@ -135,7 +161,13 @@ async function callDeepSeek(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.deepseek.key}` },
   });
-  return { name: 'Gemma 3', icon: '🔷', confidence: 87, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Phi-4', icon: '🔷', confidence: 87,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.06 / 1000000 + (usage.completion_tokens || 0) * 0.18 / 1000000
+  };
 }
 
 async function callOpenRouter(query) {
@@ -146,7 +178,13 @@ async function callOpenRouter(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
-  return { name: 'Llama 3', icon: '🦙', confidence: 84, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Llama 3', icon: '🦙', confidence: 84,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.04 / 1000000 + (usage.completion_tokens || 0) * 0.12 / 1000000
+  };
 }
 
 async function callTogetherAI(query) {
@@ -157,7 +195,13 @@ async function callTogetherAI(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.togetherai.key}` },
   });
-  return { name: 'Mistral', icon: '🌟', confidence: 86, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Mistral', icon: '🌟', confidence: 86,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.04 / 1000000 + (usage.completion_tokens || 0) * 0.12 / 1000000
+  };
 }
 
 async function callCerebras(query) {
@@ -168,7 +212,13 @@ async function callCerebras(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.cerebras.key}` },
   });
-  return { name: 'Cerebras', icon: '⚙️', confidence: 83, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Cerebras', icon: '⚙️', confidence: 83,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: 0
+  };
 }
 
 async function callQwen(query) {
@@ -179,7 +229,13 @@ async function callQwen(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
-  return { name: 'Qwen 2.5', icon: '🐉', confidence: 86, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Qwen 2.5', icon: '🐉', confidence: 86,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
+  };
 }
 
 async function callNemotron(query) {
@@ -190,7 +246,13 @@ async function callNemotron(query) {
   }, {
     headers: { 'Authorization': `Bearer ${APIs.nemotron.key}` },
   });
-  return { name: 'Nemotron', icon: '🔬', confidence: 88, content: response.data.choices?.[0]?.message?.content || '' };
+  const usage = response.data.usage || {};
+  return {
+    name: 'Nemotron', icon: '🔬', confidence: 88,
+    content: response.data.choices?.[0]?.message?.content || '',
+    tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
+    cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
+  };
 }
 
 const PORT = process.env.PORT || 3000;
