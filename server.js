@@ -8,6 +8,20 @@ const { exec } = require('child_process');
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Maintenance mode toggle (set MAINTENANCE=true to activate)
+if (process.env.MAINTENANCE === 'true') {
+  app.get('*', (req, res) => {
+    res.send(`<!DOCTYPE html><html><body style="background:#0a0a0f;color:#fff;text-align:center;padding:40px;font-family:Arial">
+      <h1 style="color:#c9a227">HERCULEAN</h1>
+      <p>Coming August 2028</p>
+      <p>Get on the waitlist: <a href="https://www.paypal.me/robvallarelli" style="color:#c9a227">notify me</a></p>
+    </body></html>`);
+  });
+  app.listen(3001, () => console.log('MAINTENANCE MODE — port 3001'));
+  process.exit(0);
+}
+
 app.use(express.static(__dirname));
 
 const SYSTEM_PROMPT = 'You are a helpful, knowledgeable, and practical assistant. Answer all questions directly, thoroughly, and with useful actionable information. Do not refuse reasonable requests or add unnecessary caveats. Be concise but complete.';
@@ -29,21 +43,37 @@ const APIs = {
 // Health check endpoint for Railway
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Prompt improvement function
+function improvePrompt(query) {
+  const improvements = [
+    'Be specific and clear about what you need.',
+    'Include relevant context or constraints.',
+    'Ask for the format or structure you want.',
+  ];
+  if (!query) return query;
+  const improved = `${query}\n\nPlease provide a detailed, well-structured response.`;
+  return improved;
+}
+
 // Query handler
 app.post('/query', async (req, res) => {
   try {
-    const { query, mode = 'synthesis' } = req.body;
+    const { query, mode = 'search', improvePrompt: shouldImprove = false } = req.body;
     if (!query) return res.status(400).json({ error: 'No query provided' });
 
+  let finalQuery = query;
+  if (shouldImprove) {
+    finalQuery = improvePrompt(query);
+  }
+
   const modeHandlers = {
-    synthesis: (q) => q,
-    debate: (q) => `Argue multiple perspectives on this: ${q}`,
-    consistency: (q) => `Evaluate the consistency of this claim: "${q}"`,
+    search: (q) => q,
     code: (q) => `Review this code for security, performance, readability, and architecture issues:\n\n${q}`,
-    optimizer: (q) => `Critically analyze and suggest improvements for this prompt:\n\n"${q}"`
+    research: (q) => `Provide scholarly analysis with citations and methodology gaps: ${q}`,
+    competitive: (q) => `Conduct SWOT competitive intelligence analysis: ${q}`
   };
 
-  const processedQuery = modeHandlers[mode] ? modeHandlers[mode](query) : query;
+  const processedQuery = modeHandlers[mode] ? modeHandlers[mode](finalQuery) : finalQuery;
 
   const results = {};
   const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
@@ -152,6 +182,42 @@ app.post('/query', async (req, res) => {
   }
 });
 
+// Improve prompt endpoint
+app.post('/improve', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
+
+    const improvementPrompt = `You are an expert in prompt engineering. Your task is to improve the following prompt to make it more effective, specific, and actionable. The improved prompt should:
+
+1. Be more specific and clear about the desired output
+2. Include relevant context, constraints, and edge cases
+3. Ask for the format or structure of the response
+4. Use clear language and logical structure
+5. Anticipate follow-up questions and address them proactively
+
+Original prompt: "${prompt}"
+
+Provide ONLY the improved prompt, nothing else. Do not include explanations or metadata. Return the improved prompt as-is, ready to use.`;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+      model: APIs.claude.model,
+      messages: [{ role: 'user', content: improvementPrompt }],
+      max_tokens: 1000,
+    }, {
+      headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
+    });
+
+    const improved = response.data.choices?.[0]?.message?.content || '';
+    if (!improved) return res.status(500).json({ error: 'Failed to improve prompt' });
+
+    res.json({ improved });
+  } catch (err) {
+    console.error('Improve endpoint error:', err);
+    res.status(500).json({ error: 'Failed to improve prompt' });
+  }
+});
+
 async function callClaude(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.claude.model,
@@ -189,18 +255,15 @@ async function callGPT(query) {
 async function callGemini(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.gemini.model,
-    messages: [{ role: 'system', content: SYSTEM_PROMPT + ' Format responses as bullet points (- or *) with descriptions.' }, { role: 'user', content: query }],
+    messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
     max_tokens: 2200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gemini.key}` },
   });
   const usage = response.data.usage || {};
-  let content = response.data.choices?.[0]?.message?.content || '';
-  // Convert numbered lists to bullet points
-  content = content.replace(/^\d+\.\s+/gm, '- ');
   return {
     name: 'Gemini', icon: '🎨', confidence: 85,
-    content: content,
+    content: response.data.choices?.[0]?.message?.content || '',
     tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
     cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
   };
@@ -244,7 +307,7 @@ async function callOpenRouter(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.openrouter.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 3000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
