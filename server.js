@@ -64,11 +64,13 @@ app.post('/query', async (req, res) => {
     finalQuery = improvePrompt(query);
   }
 
+  const FORMAT_INSTRUCTION = '\n\n[Format: Use bullet points for lists, concise paragraphs for explanations. Avoid tables—use structured text instead. Keep responses scannable and clean.]';
+
   const modeHandlers = {
-    search: (q) => q,
-    code: (q) => `Review this code for security, performance, readability, and architecture issues:\n\n${q}`,
-    research: (q) => `Provide scholarly analysis with citations and methodology gaps: ${q}`,
-    competitive: (q) => `Conduct SWOT competitive intelligence analysis: ${q}`
+    search: (q) => q + FORMAT_INSTRUCTION,
+    code: (q) => `Review this code for security, performance, readability, and architecture issues:\n\n${q}` + FORMAT_INSTRUCTION,
+    research: (q) => `Provide scholarly analysis with citations and methodology gaps: ${q}` + FORMAT_INSTRUCTION,
+    competitive: (q) => `Conduct SWOT competitive intelligence analysis: ${q}` + FORMAT_INSTRUCTION
   };
 
   const processedQuery = modeHandlers[mode] ? modeHandlers[mode](finalQuery) : finalQuery;
