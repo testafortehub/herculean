@@ -26,10 +26,14 @@ const APIs = {
   nemotron:  { key: process.env.OPENROUTER_API_KEY, model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
 };
 
+// Health check endpoint for Railway
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // Query handler
 app.post('/query', async (req, res) => {
-  const { query, mode = 'synthesis' } = req.body;
-  if (!query) return res.status(400).json({ error: 'No query provided' });
+  try {
+    const { query, mode = 'synthesis' } = req.body;
+    if (!query) return res.status(400).json({ error: 'No query provided' });
 
   const modeHandlers = {
     synthesis: (q) => q,
@@ -142,6 +146,10 @@ app.post('/query', async (req, res) => {
   }
 
   res.json(results);
+  } catch (err) {
+    console.error('Query endpoint error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 async function callClaude(query) {
@@ -314,11 +322,34 @@ async function callNemotron(query) {
   };
 }
 
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+// Validate API keys on startup
+const missingKeys = [];
+Object.entries(APIs).forEach(([service, config]) => {
+  if (!config.key) missingKeys.push(service);
+});
+if (missingKeys.length > 0) {
+  console.warn(`Warning: Missing API keys for: ${missingKeys.join(', ')}`);
+}
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   const url = `http://localhost:${PORT}`;
   const platform = process.platform;
   let openCmd = platform === 'win32' ? `start ${url}` : platform === 'darwin' ? `open ${url}` : `xdg-open ${url}`;
   exec(openCmd, (err) => { if (err) console.log('Browser auto-open skipped'); });
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err);
 });
