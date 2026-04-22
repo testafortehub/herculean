@@ -284,7 +284,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 600,
+    max_tokens: 1000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
@@ -301,7 +301,7 @@ async function callNemotron(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.nemotron.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 600,
+    max_tokens: 1000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.nemotron.key}` },
   });
