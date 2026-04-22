@@ -281,17 +281,22 @@
       text-transform: uppercase;
     }
     .synthesis-body { color: #ffffff !important; font-size: 0.95rem; line-height: 1.8; }
-    .synthesis-body.loading { color: #ffffff !important; font-style: italic; font-weight: bold; }
+    .synthesis-body.loading { color: #c9a227 !important; font-weight: bold; animation: bounce 1s ease-in-out infinite; display: flex; align-items: center; justify-content: center; min-height: 60px; }
     .synthesis-body.loading::after {
       content: '';
       animation: dots 1.5s steps(4, end) infinite;
-      color: #ffffff !important;
+      color: #c9a227 !important;
+      font-size: 1.2rem;
     }
     @keyframes dots {
       0%, 20% { content: ''; }
       40% { content: '.'; }
       60% { content: '..'; }
       80%, 100% { content: '...'; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
     }
     #synthesisCard .copy-btn:disabled {
       opacity: 1 !important;
@@ -1669,6 +1674,38 @@
       const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
       scoreValue.textContent = score.toFixed(1);
       scoreValue.style.color = color;
+    });
+
+    // ─── Improve Prompt ───────────────────────────────────────────
+    document.getElementById('improvePrompt').addEventListener('change', async (e) => {
+      if (!e.target.checked) return;
+      const input = document.getElementById('queryInput');
+      const prompt = input.value.trim();
+      if (!prompt) {
+        e.target.checked = false;
+        showToast('Enter a prompt first');
+        return;
+      }
+      input.disabled = true;
+      e.target.disabled = true;
+      try {
+        const resp = await fetch(`${BACKEND_URL}/improve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
+        });
+        if (!resp.ok) throw new Error('Improve failed');
+        const data = await resp.json();
+        input.value = data.improved;
+        input.dispatchEvent(new Event('input'));
+        showToast('Prompt improved');
+      } catch (err) {
+        showToast('Could not improve prompt');
+        e.target.checked = false;
+      } finally {
+        input.disabled = false;
+        e.target.disabled = false;
+      }
     });
 
     // ─── Enter key submission ──────────────────────────────────────
