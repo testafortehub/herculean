@@ -281,17 +281,23 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-    .synthesis-body { color: #ffffff; font-size: 0.95rem; line-height: 1.8; }
-    .synthesis-body.loading { color: #888; font-style: italic; }
+    .synthesis-body { color: #ffffff !important; font-size: 0.95rem; line-height: 1.8; }
+    .synthesis-body.loading { color: #ffffff !important; font-style: italic; font-weight: bold; }
     .synthesis-body.loading::after {
       content: '';
       animation: dots 1.5s steps(4, end) infinite;
+      color: #ffffff !important;
     }
     @keyframes dots {
       0%, 20% { content: ''; }
       40% { content: '.'; }
       60% { content: '..'; }
       80%, 100% { content: '...'; }
+    }
+    #synthesisCard .copy-btn:disabled {
+      opacity: 1 !important;
+      color: #ffffff !important;
+      border-color: #ffffff !important;
     }
     .synthesis-body p { margin-bottom: 12px; }
     .synthesis-body p:last-child { margin-bottom: 0; }
@@ -380,6 +386,7 @@
     .card-footer-exports {
       display: flex;
       gap: 6px;
+      flex: 1;
     }
 
 
@@ -827,11 +834,10 @@
     <div class="search-section">
       <p class="tagline">Ask 10 Leading AI LLMs At Once — Compare, Copy, Conquer.</p>
       <div class="mode-tabs">
-        <button class="mode-tab active" data-mode="synthesis" onclick="switchMode('synthesis')">Synthesis</button>
-        <button class="mode-tab" data-mode="debate" onclick="switchMode('debate')">Debate</button>
-        <button class="mode-tab" data-mode="consistency" onclick="switchMode('consistency')">Consistency</button>
+        <button class="mode-tab active" data-mode="search" onclick="switchMode('search')">Basic Search</button>
         <button class="mode-tab" data-mode="code" onclick="switchMode('code')">Code Review</button>
-        <button class="mode-tab" data-mode="optimizer" onclick="switchMode('optimizer')">Prompt Optimizer</button>
+        <button class="mode-tab" data-mode="research" onclick="switchMode('research')">Scholarly Research</button>
+        <button class="mode-tab" data-mode="competitive" onclick="switchMode('competitive')">Competitive Analysis</button>
       </div>
       <div class="search-bar">
         <textarea
@@ -840,7 +846,10 @@
           placeholder="I want to learn the meaning of life :)"
           maxlength="500"
         ></textarea>
-        <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
+        <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;margin-top:12px;">
+          <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
+          Improve my prompt
+        </label>
       </div>
       <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
         Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
@@ -850,6 +859,7 @@
           <span id="counterText">5 free searches today</span>
           <div class="counter-dots" id="counterDots"></div>
         </div>
+        <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
       </div>
     </div>
 
@@ -969,8 +979,8 @@
     const DAILY_LIMIT      = 5;
     const LAUNCH_DATE      = new Date('2026-04-17T00:00:00');
     const EARLY_BIRD_DAYS  = 7;
-    const EARLY_BIRD_PRICE = 14.99;
-    const REGULAR_PRICE    = 49.00;
+    const EARLY_BIRD_PRICE = 24.99;
+    const REGULAR_PRICE    = 79.99;
     const PAYPAL_ME        = 'https://www.paypal.me/robvallarelli';
     // ───────────────────────────────────────────────────────────────
 
@@ -992,7 +1002,12 @@
     let lastResults = {};
 
     // ─── Search counter ────────────────────────────────────────────
+    function isAdmin() {
+      return localStorage.getItem('herc_admin') === 'true' || new URLSearchParams(window.location.search).get('admin') === 'rob2028';
+    }
+
     function getUsage() {
+      if (isAdmin()) return { date: new Date().toDateString(), count: 0, unlimited: true };
       const today = new Date().toDateString();
       try {
         const stored = JSON.parse(localStorage.getItem('herc_usage') || '{}');
@@ -1004,6 +1019,12 @@
 
     function updateCounterUI() {
       const usage     = getUsage();
+      if (usage.unlimited) {
+        document.getElementById('counterText').textContent = '∞ Unlimited access';
+        document.getElementById('counterDots').innerHTML = '';
+        document.getElementById('goBtn').disabled = false;
+        return;
+      }
       const remaining = Math.max(0, DAILY_LIMIT - usage.count);
       document.getElementById('counterText').textContent =
         remaining === 0 ? 'No free searches left today' :
@@ -1021,29 +1042,15 @@
 
     // ─── Early bird pricing ────────────────────────────────────────
     function setupPricing() {
-      const earlyBirdEnd = new Date(LAUNCH_DATE.getTime() + EARLY_BIRD_DAYS * 86400000);
-      const isEarlyBird  = new Date() < earlyBirdEnd;
-      const activePrice  = isEarlyBird ? EARLY_BIRD_PRICE : REGULAR_PRICE;
-      const payLink      = `${PAYPAL_ME}/${activePrice.toFixed(2)}`;
-      const currentPrice = document.getElementById('currentPrice');
-      const mainPayBtn = document.getElementById('mainPayBtn');
-      const overlayPayBtn = document.getElementById('overlayPayBtn');
-      const priceStrike = document.getElementById('priceStrike');
+      // Pricing hidden until post-FRA (Aug 2028)
       const earlyBirdBadge = document.getElementById('earlyBirdBadge');
       const countdown = document.getElementById('countdown');
-
-      if (currentPrice) currentPrice.textContent = `$${activePrice.toFixed(2)}`;
-      if (mainPayBtn) mainPayBtn.href = payLink;
-      if (overlayPayBtn) overlayPayBtn.href = payLink;
-      if (isEarlyBird) {
-        if (priceStrike) priceStrike.textContent = `Regular $${REGULAR_PRICE.toFixed(2)}`;
-        if (earlyBirdBadge) earlyBirdBadge.style.display = '';
-        startCountdown(earlyBirdEnd);
-      } else {
-        if (priceStrike) priceStrike.textContent = '';
-        if (earlyBirdBadge) earlyBirdBadge.style.display = 'none';
-        if (countdown) countdown.textContent = '';
-      }
+      const currentPrice = document.getElementById('currentPrice');
+      const priceStrike = document.getElementById('priceStrike');
+      if (earlyBirdBadge) earlyBirdBadge.style.display = 'none';
+      if (countdown) countdown.textContent = '';
+      if (currentPrice) currentPrice.style.display = 'none';
+      if (priceStrike) priceStrike.style.display = 'none';
     }
 
     function startCountdown(endDate) {
@@ -1113,6 +1120,7 @@
       synthCard.classList.add('visible');
       const synthBody = document.getElementById('synthesisBody');
       synthBody.className = 'synthesis-body loading';
+      synthBody.style.color = '#ffffff';
       synthBody.textContent = 'Synthesizing all responses';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
@@ -1206,8 +1214,12 @@
         document.getElementById('expSynthCsv').disabled = false;
       } else {
         synthBody.className = 'synthesis-body loading';
+        synthBody.style.color = '#ffffff';
         synthBody.textContent = data.synthesis?.error || 'Synthesis unavailable.';
         synthBtn.disabled   = true;
+        document.getElementById('expSynthMd').disabled = true;
+        document.getElementById('expSynthJson').disabled = true;
+        document.getElementById('expSynthCsv').disabled = true;
       }
 
       // Render metrics and enable exports
@@ -1219,11 +1231,14 @@
       const query = document.getElementById('queryInput').value.trim();
       if (!query) return;
       const usage = getUsage();
-      if (usage.count >= DAILY_LIMIT) { showLockedOverlay(); return; }
-      usage.count++;
-      saveUsage(usage);
+      if (!usage.unlimited && usage.count >= DAILY_LIMIT) { showLockedOverlay(); return; }
+      if (!usage.unlimited) {
+        usage.count++;
+        saveUsage(usage);
+      }
       updateCounterUI();
-      posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count });
+      const improvePrompt = document.getElementById('improvePrompt').checked;
+      posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count, improve_prompt: improvePrompt });
       lastQuery = query;
       document.getElementById('goBtn').disabled = true;
       document.getElementById('copyAllBtn').disabled = true;
@@ -1234,7 +1249,7 @@
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify({ query, mode: currentMode }),
+          body   : JSON.stringify({ query, mode: currentMode, improvePrompt }),
           signal : controller.signal,
         });
         if (!resp.ok) throw new Error(`Server error (${resp.status})`);
