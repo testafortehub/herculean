@@ -22,8 +22,6 @@ if (process.env.MAINTENANCE === 'true') {
   process.exit(0);
 }
 
-app.use(express.static(__dirname));
-
 const SYSTEM_PROMPT = 'You are a helpful, knowledgeable, and practical assistant. Answer all questions directly, thoroughly, and with useful actionable information. Do not refuse reasonable requests or add unnecessary caveats. Be concise but complete.';
 
 // 10 LLM API Keys from .env
@@ -387,6 +385,9 @@ async function callNemotron(query) {
     cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
   };
 }
+
+// Serve static files after all API routes
+app.use(express.static(__dirname));
 
 // Global error handlers
 process.on('unhandledRejection', (reason, promise) => {
