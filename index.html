@@ -108,12 +108,22 @@
       min-height: 120px;
       resize: vertical;
       word-wrap: break-word;
-      white-space: pre-wrap;
       overflow-wrap: break-word;
+      font-family: inherit;
     }
 
     .search-input:focus { border-color: #c9a227; }
     .search-input::placeholder { color: #888; }
+
+    /* ── Links in markdown ── */
+    .card-body a, .synthesis-body a {
+      color: #e8c547;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+    .card-body a:hover, .synthesis-body a:hover {
+      color: #fff;
+    }
 
     .go-btn {
       padding: 16px 40px;
@@ -824,14 +834,13 @@
         <button class="mode-tab" data-mode="optimizer" onclick="switchMode('optimizer')">Prompt Optimizer</button>
       </div>
       <div class="search-bar">
-        <input
+        <textarea
           id="queryInput"
-          type="text"
           class="search-input"
           placeholder="I want to learn the meaning of life :)"
           maxlength="500"
-          onkeydown="if(event.key==='Enter') runQuery()"
-        >
+          onkeydown="if(event.key==='Enter' && event.ctrlKey) runQuery()"
+        ></textarea>
         <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
       </div>
       <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
