@@ -242,8 +242,8 @@
 
     /* Single column — 1 card per row */
     .cards-grid {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 14px;
     }
 
@@ -760,7 +760,7 @@
       position: fixed;
       left: 0;
       top: 50px;
-      width: 280px;
+      width: 200px;
       height: calc(100vh - 50px);
       background: #111122;
       border-right: 2px solid #333355;
@@ -789,8 +789,8 @@
       background: #0a0a0f;
       border: 1px solid #2a2a4a;
       border-radius: 6px;
-      font-size: 0.8rem;
-      color: #aaa;
+      font-size: 0.7rem;
+      color: #ffffff;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
@@ -1672,11 +1672,17 @@
       const scoreValue = document.getElementById('promptScoreValue');
       const scoreDisplay = document.getElementById('promptScoreDisplay');
       scoreDisplay.style.display = '';
-      const score = query ? scorePromptQuality(query) : 0;
+      let score = query ? scorePromptQuality(query) : 0;
+      if (preImproveScore > 0 && score < preImproveScore) {
+        score = preImproveScore;
+        preImproveScore = 0;
+      }
       const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
       scoreValue.textContent = score.toFixed(1);
       scoreValue.style.color = color;
     });
+
+    let preImproveScore = 0;
 
     // ─── Improve Prompt ───────────────────────────────────────────
     document.getElementById('improvePrompt').addEventListener('change', async (e) => {
@@ -1688,6 +1694,7 @@
         showToast('Enter a prompt first');
         return;
       }
+      preImproveScore = scorePromptQuality(prompt);
       input.disabled = true;
       e.target.disabled = true;
       try {
