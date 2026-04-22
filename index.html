@@ -243,9 +243,10 @@
     /* Single column — 1 card per row */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
       gap: 24px;
       margin-left: 220px;
+      margin-right: 40px;
     }
 
     .card {
@@ -870,29 +871,34 @@
       </div>
     </div>
 
-    <div class="results-header">
-      <span class="results-label">Responses</span>
-      <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
-    </div>
+  </div>
 
-    <div id="synthesisCard">
-      <div class="synthesis-header">
-        <span style="font-size:1.4rem">⚡</span>
-        <span class="synthesis-title">Herculean Synthesis</span>
-      </div>
-      <div class="synthesis-body" id="synthesisBody"></div>
-      <div class="card-footer" style="margin-top:14px;">
-        <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
-          <div class="card-footer-exports">
-            <button class="copy-btn" id="expSynthMd" onclick="exportMarkdownSynth()" disabled>📋 MD</button>
-            <button class="copy-btn" id="expSynthJson" onclick="exportJSONSynth()" disabled>{} JSON</button>
-            <button class="copy-btn" id="expSynthCsv" onclick="exportCSVSynth()" disabled>📊 CSV</button>
-          </div>
-          <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
+  <div class="results-header">
+    <span class="results-label">Responses</span>
+    <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
+  </div>
+
+  <div id="synthesisCard">
+    <div class="synthesis-header">
+      <span style="font-size:1.4rem">⚡</span>
+      <span class="synthesis-title">Herculean Synthesis</span>
+    </div>
+    <div class="synthesis-body" id="synthesisBody"></div>
+    <div class="card-footer" style="margin-top:14px;">
+      <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
+        <div class="card-footer-exports">
+          <button class="copy-btn" id="expSynthMd" onclick="exportMarkdownSynth()" disabled>📋 MD</button>
+          <button class="copy-btn" id="expSynthJson" onclick="exportJSONSynth()" disabled>{} JSON</button>
+          <button class="copy-btn" id="expSynthCsv" onclick="exportCSVSynth()" disabled>📊 CSV</button>
         </div>
+        <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
       </div>
     </div>
+  </div>
 
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <div class="container">
     <div class="metrics-tab" id="metricsTab">
       <div class="metrics-header">📊 Metrics</div>
       <div class="metrics-grid" id="metricsGrid"></div>
@@ -903,10 +909,7 @@
         <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
       </div>
     </div>
-
   </div>
-
-  <div class="cards-grid" id="cardsGrid"></div>
 
   <!-- Waitlist -->
   <div style="max-width:800px;margin:0 auto;padding:0 20px">
