@@ -208,7 +208,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 6px 0 10px;
+      margin: 6px auto 10px;
+      max-width: 800px;
+      margin-left: 220px;
     }
 
     .results-label {
@@ -243,7 +245,7 @@
     /* Single column — 1 card per row */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(900px, 1fr));
       gap: 24px;
       margin-left: 220px;
       margin-right: 40px;
@@ -265,8 +267,10 @@
       border: 2px solid #c9a227;
       border-radius: 14px;
       padding: 22px;
-      margin-bottom: 24px;
+      margin: 0 auto 24px;
       display: block;
+      max-width: 800px;
+      margin-left: 220px;
     }
     .synthesis-header {
       display: flex;
