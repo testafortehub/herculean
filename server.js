@@ -233,7 +233,7 @@ async function callOpenRouter(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.openrouter.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 1000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
@@ -284,7 +284,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1200,
+    max_tokens: 1500,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
