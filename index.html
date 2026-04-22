@@ -243,8 +243,9 @@
     /* Single column — 1 card per row */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 24px;
+      margin-left: 220px;
     }
 
     .card {
@@ -892,8 +893,6 @@
       </div>
     </div>
 
-    <div class="cards-grid" id="cardsGrid"></div>
-
     <div class="metrics-tab" id="metricsTab">
       <div class="metrics-header">📊 Metrics</div>
       <div class="metrics-grid" id="metricsGrid"></div>
@@ -906,6 +905,8 @@
     </div>
 
   </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
 
   <!-- Waitlist -->
   <div style="max-width:800px;margin:0 auto;padding:0 20px">
