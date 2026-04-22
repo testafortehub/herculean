@@ -839,7 +839,7 @@
           class="search-input"
           placeholder="I want to learn the meaning of life :)"
           maxlength="500"
-          onkeydown="if(event.key==='Enter' && event.ctrlKey) runQuery()"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); runQuery(); }"
         ></textarea>
         <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
       </div>
@@ -1132,6 +1132,9 @@
       if (!content) return content;
 
       let text = content;
+
+      // Remove (Paid)/(Free) badges that clutter output
+      text = text.replace(/\s*\(Paid\)\s*/g, ' ').replace(/\s*\(Free\)\s*/g, ' ');
 
       // Remove unclosed bold markers: **text without closing **
       text = text.replace(/\*\*([^*]+)(?!\*\*)/g, '$1');
