@@ -165,7 +165,7 @@ async function callGPT(query) {
   const response = await axios.post('https://api.openai.com/v1/chat/completions', {
     model: APIs.gpt.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1500,
+    max_tokens: 2000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gpt.key}` },
   });
