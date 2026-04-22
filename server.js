@@ -165,7 +165,7 @@ async function callGPT(query) {
   const response = await axios.post('https://api.openai.com/v1/chat/completions', {
     model: APIs.gpt.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1500,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gpt.key}` },
   });
@@ -182,7 +182,7 @@ async function callGemini(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.gemini.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 2000,
+    max_tokens: 2200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gemini.key}` },
   });
@@ -250,7 +250,7 @@ async function callTogetherAI(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.togetherai.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 3500,
+    max_tokens: 5000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.togetherai.key}` },
   });
@@ -284,7 +284,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1500,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
