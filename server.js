@@ -77,16 +77,16 @@ app.post('/query', async (req, res) => {
   const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
 
   const calls = [
-    { key: 'claude',     fn: callClaude,     ms: 35000 },
-    { key: 'gpt',        fn: callGPT,        ms: 35000 },
+    { key: 'claude',     fn: callClaude,     ms: 60000 },
+    { key: 'gpt',        fn: callGPT,        ms: 60000 },
     { key: 'gemini',     fn: callGemini,     ms: 90000 },
-    { key: 'groq',       fn: callGroq,       ms: 35000 },
+    { key: 'groq',       fn: callGroq,       ms: 60000 },
     { key: 'deepseek',   fn: callDeepSeek,   ms: 90000 },
-    { key: 'openrouter', fn: callOpenRouter, ms: 55000 },
-    { key: 'togetherai', fn: callTogetherAI, ms: 35000 },
-    { key: 'cerebras',   fn: callCerebras,   ms: 35000 },
-    { key: 'qwen',       fn: callQwen,       ms: 55000 },
-    { key: 'nemotron',   fn: callNemotron,   ms: 35000 },
+    { key: 'openrouter', fn: callOpenRouter, ms: 60000 },
+    { key: 'togetherai', fn: callTogetherAI, ms: 60000 },
+    { key: 'cerebras',   fn: callCerebras,   ms: 60000 },
+    { key: 'qwen',       fn: callQwen,       ms: 90000 },
+    { key: 'nemotron',   fn: callNemotron,   ms: 60000 },
   ];
 
   await Promise.all(calls.map(async ({ key, fn, ms }) => {
@@ -149,16 +149,19 @@ app.post('/query', async (req, res) => {
       };
 
       const synthPrompt = synthesisPrompts[mode] || synthesisPrompts.synthesis;
-      const synthResponse = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: 'anthropic/claude-3-haiku',
-        messages: [
-          { role: 'system', content: synthPrompt.system },
-          { role: 'user', content: synthPrompt.user }
-        ],
-        max_tokens: 1500,
-      }, {
-        headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
-      });
+      const synthResponse = await Promise.race([
+        axios.post('https://openrouter.ai/api/v1/chat/completions', {
+          model: 'anthropic/claude-3-haiku',
+          messages: [
+            { role: 'system', content: synthPrompt.system },
+            { role: 'user', content: synthPrompt.user }
+          ],
+          max_tokens: 1500,
+        }, {
+          headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
+        }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('Synthesis timeout')), 15000))
+      ]);
       let synthContent = synthResponse.data.choices?.[0]?.message?.content || '';
 
       // For code mode: prepend strongest model line

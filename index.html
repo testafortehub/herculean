@@ -1245,7 +1245,7 @@
       document.getElementById('copyAllBtn').disabled = true;
       showLoadingCards();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+      const timeout = setTimeout(() => controller.abort(), 120000);
       try {
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
@@ -1257,7 +1257,7 @@
         renderResults(await resp.json());
       } catch (err) {
         let msg = 'Error querying LLMs';
-        if (err.name === 'AbortError') msg = 'Request timeout (60s) — server may be overloaded';
+        if (err.name === 'AbortError') msg = 'Request timeout (120s) — check your internet or try a shorter prompt';
         else if (err.message.includes('Server error')) msg = err.message;
         else if (err instanceof TypeError) msg = 'Network error — check connection';
         LLM_ORDER.forEach(key => {
