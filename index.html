@@ -251,10 +251,10 @@
       background: #0e0e1c;
       border: 2px solid #ffffff;
       border-radius: 14px;
-      padding: 18px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
     }
 
     /* ── Herculean Synthesis card ── */
@@ -847,15 +847,17 @@
           maxlength="500"
         ></textarea>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;margin-top:12px;max-width:700px;margin-left:auto;margin-right:auto;">
-        <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
-        Improve my prompt
-      </label>
-      <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
-        Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:12px;max-width:700px;margin-left:auto;margin-right:auto;width:100%;justify-content:space-between;">
+        <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;">
+          <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
+          Improve my prompt
+        </label>
+        <div id="promptScoreDisplay" style="font-size:0.9rem;color:#ffffff;display:none;font-weight:600;">
+          Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
+        </div>
       </div>
       <div class="search-meta" style="display:flex;flex-direction:column;gap:12px;align-items:center;">
-        <button class="go-btn" id="goBtn" onclick="runQuery()" style="padding:14px 40px;border-radius:24px;min-width:120px;">Go</button>
+        <button class="go-btn" id="goBtn" onclick="runQuery()" style="padding:10px 32px;border-radius:20px;">Go</button>
         <div class="search-counter" style="border:2px solid rgba(201,162,39,0.4);border-radius:20px;padding:10px 16px;width:fit-content;">
           <span id="counterText">5 free searches today</span>
           <div class="counter-dots" id="counterDots"></div>
@@ -991,7 +993,7 @@
       gemini:     { name: 'Gemini',    logo: 'Model Logos/gemini.png',     confidence: 85, logoSize: 110 },
       groq:       { name: 'Groq',      logo: 'Model Logos/groq.png',       confidence: 90 },
       deepseek:   { name: 'Phi-4',       logo: 'Model Logos/phi4.png',       confidence: 87, logoSize: 110 },
-      openrouter: { name: 'Llama 3',   logo: 'Model Logos/llama.png',      confidence: 84 },
+      openrouter: { name: 'Llama 3',   logo: 'Model Logos/llama.png',      confidence: 84, logoSize: 110 },
       togetherai: { name: 'Mistral',   logo: 'Model Logos/mistral.png',    confidence: 86, logoSize: 110 },
       cerebras:   { name: 'Cerebras',  logo: 'Model Logos/cerebras.png',   confidence: 83, logoSize: 110 },
       qwen:       { name: 'Qwen 2.5',  logo: 'Model Logos/qwen.png',       confidence: 86 },
@@ -1619,34 +1621,29 @@
 
     // ─── Mode Switching ────────────────────────────────────────────
     const modeConfig = {
-      synthesis: {
-        label: 'Synthesis',
-        placeholder: 'Ask 10 LLMs and synthesize one definitive answer',
-        height: '100px'
-      },
-      debate: {
-        label: 'Debate',
-        placeholder: 'What topic or claim do you want explored from multiple angles?',
-        height: '100px'
-      },
-      consistency: {
-        label: 'Consistency',
-        placeholder: 'Enter a claim or question to check for LLM agreement',
-        height: '100px'
+      search: {
+        label: 'Basic Search',
+        placeholder: 'I want to learn the meaning of life :)',
+        height: '120px'
       },
       code: {
         label: 'Code Review',
         placeholder: 'Paste code for security, performance, readability & architecture review',
         height: '180px'
       },
-      optimizer: {
-        label: 'Prompt Optimizer',
-        placeholder: 'Enter your prompt — get optimization suggestions from all 10 LLMs',
-        height: '140px'
+      research: {
+        label: 'Scholarly Research',
+        placeholder: 'What topic would you like researched from academic perspectives?',
+        height: '120px'
+      },
+      competitive: {
+        label: 'Competitive Analysis',
+        placeholder: 'Enter a company or product to analyze against competitors',
+        height: '120px'
       }
     };
 
-    let currentMode = 'synthesis';
+    let currentMode = 'search';
 
     function switchMode(mode) {
       currentMode = mode;
