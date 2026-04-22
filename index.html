@@ -1132,8 +1132,8 @@
 
       let text = content;
 
-      // Remove (Paid)/(Free) badges, preserving paragraph structure
-      text = text.replace(/\(Paid\)\s*/g, '').replace(/\(Free\)\s*/g, '');
+      // Remove (Paid)/(Free) and [Paid]/[Free] badges
+      text = text.replace(/[\[\(]Paid[\]\)]\s*/gi, '').replace(/[\[\(]Free[\]\)]\s*/gi, '');
 
       // Remove unclosed bold markers: **text without closing **
       text = text.replace(/\*\*([^*]+)(?!\*\*)/g, '$1');
