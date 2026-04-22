@@ -54,10 +54,10 @@ app.post('/query', async (req, res) => {
     { key: 'gemini',     fn: callGemini,     ms: 90000 },
     { key: 'groq',       fn: callGroq,       ms: 35000 },
     { key: 'deepseek',   fn: callDeepSeek,   ms: 90000 },
-    { key: 'openrouter', fn: callOpenRouter, ms: 35000 },
+    { key: 'openrouter', fn: callOpenRouter, ms: 50000 },
     { key: 'togetherai', fn: callTogetherAI, ms: 35000 },
     { key: 'cerebras',   fn: callCerebras,   ms: 35000 },
-    { key: 'qwen',       fn: callQwen,       ms: 35000 },
+    { key: 'qwen',       fn: callQwen,       ms: 50000 },
     { key: 'nemotron',   fn: callNemotron,   ms: 35000 },
   ];
 
@@ -241,7 +241,7 @@ async function callOpenRouter(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.openrouter.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1200,
+    max_tokens: 1000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
@@ -258,7 +258,7 @@ async function callTogetherAI(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.togetherai.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 8000,
+    max_tokens: 9000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.togetherai.key}` },
   });
@@ -292,7 +292,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1500,
+    max_tokens: 1800,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
