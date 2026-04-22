@@ -1668,6 +1668,8 @@
     document.getElementById('queryInput').addEventListener('input', () => {
       const query = document.getElementById('queryInput').value.trim();
       const scoreValue = document.getElementById('promptScoreValue');
+      const scoreDisplay = document.getElementById('promptScoreDisplay');
+      scoreDisplay.style.display = '';
       const score = query ? scorePromptQuality(query) : 0;
       const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
       scoreValue.textContent = score.toFixed(1);
