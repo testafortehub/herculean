@@ -65,3 +65,14 @@
   - Endpoint confirmed working with test prompts (test → 2s, complex prompt → 4s)
 - **Workflow established**: Ask user approval before committing (user is Navigator, Claude is Driver)
 - **Status**: Ready for end-to-end testing with actual user input
+
+## Apr 22, 2026 — Session 6 (Layout Width & Spacing Fixes)
+- **User request**: "Synth is centered but not the same width as the LLMs. Reduce the padding between 5 searches and the word Responses above the synth to 1.5 the width of synth and Claude"
+- **Changes made**:
+  1. Synthesis card width: Changed from `width: 900px` to `width: 100%` (line 274)
+     - Now expands to match LLM cards in grid (which use `grid-template-columns: repeat(auto-fit, minmax(900px, 1fr))`)
+     - Synthesis card now same visual width as LLM cards across all viewport sizes
+  2. Search-meta margin: Reduced from `margin-top: 14px` to `margin-top: 8px` (line 182)
+     - Tightens spacing between search counter ("5 free searches") and "Responses" header
+- **Git commit**: `9a687a1` - "Fix synthesis card width to match LLM cards, reduce search-meta margin"
+- **Deployment**: Pushed to master, Railway auto-deploy in progress
