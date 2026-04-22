@@ -852,7 +852,7 @@
           Improve my prompt
         </label>
         <div id="promptScoreDisplay" style="font-size:0.9rem;color:#ffffff;font-weight:600;">
-          Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
+          Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">0.0</span>
         </div>
       </div>
       <div class="search-meta" style="display:flex;flex-direction:column;gap:12px;align-items:center;">
@@ -1664,17 +1664,11 @@
     // ─── Real-time Prompt Quality Display ──────────────────────────
     document.getElementById('queryInput').addEventListener('input', () => {
       const query = document.getElementById('queryInput').value.trim();
-      const display = document.getElementById('promptScoreDisplay');
       const scoreValue = document.getElementById('promptScoreValue');
-      if (!query) {
-        display.style.display = 'none';
-        return;
-      }
-      const score = scorePromptQuality(query);
+      const score = query ? scorePromptQuality(query) : 0;
       const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
       scoreValue.textContent = score.toFixed(1);
       scoreValue.style.color = color;
-      display.style.display = 'block';
     });
 
     // ─── Enter key submission ──────────────────────────────────────
