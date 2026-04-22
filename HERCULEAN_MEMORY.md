@@ -51,3 +51,17 @@
 - **Server status**: Running on port 3002 (port 3001 has orphaned process), all endpoints responding correctly
 - **Frontend integration**: Checkbox event listener (lines 1679-1705 of index.html) fully wired to POST `/improve` on click
 - **Next step**: Deploy to Railway (auto-deploy on git push to master)
+
+## Apr 22, 2026 — Session 5 (Prompt Quality Score Visibility Fix)
+- **Bug fixed**: Prompt quality score counter disappeared after clicking "Improve my prompt" checkbox
+  - ROOT CAUSE: switchMode() hides promptScoreDisplay, but input listener never re-showed it
+  - FIX: Added `scoreDisplay.style.display = ''` to input listener (lines 1668-1675)
+  - Now score recalculates AND display re-appears when improved text arrives
+- **Git commit**: `722d6e1` - "Fix prompt quality score visibility after prompt improvement"
+- **Backend timeout investigation**:
+  - User reported 60s timeout when clicking improve checkbox with exhaustive prompt
+  - Manual testing: `/improve` endpoint responds in 2-4 seconds (normal)
+  - Timeout was likely transient OpenRouter API latency or browser timeout
+  - Endpoint confirmed working with test prompts (test → 2s, complex prompt → 4s)
+- **Workflow established**: Ask user approval before committing (user is Navigator, Claude is Driver)
+- **Status**: Ready for end-to-end testing with actual user input

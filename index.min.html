@@ -11,8 +11,6 @@
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
-      padding-left: 220px;
-      padding-right: 40px;
     }
 
     .header-img {
@@ -23,7 +21,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 0 20px 60px;
     }
@@ -35,8 +33,6 @@
       border-bottom: 1px solid rgba(201,162,39,0.3);
       padding: 18px 20px 14px;
       text-align: center;
-      max-width: 900px;
-      margin: 0 auto;
       position: relative;
       display: flex;
       align-items: center;
@@ -95,13 +91,13 @@
     .search-bar {
       display: flex;
       gap: 12px;
-      max-width: 900px;
+      max-width: 700px;
       margin: 0 auto;
     }
 
     .search-input {
       flex: 1;
-      padding: 16px 20px 32px;
+      padding: 16px 20px;
       background: #111122;
       border: 2px solid #ffffff;
       border-radius: 12px;
@@ -109,7 +105,7 @@
       font-size: 1rem;
       outline: none;
       transition: border-color 0.2s;
-      min-height: 140px;
+      min-height: 120px;
       resize: vertical;
       word-wrap: break-word;
       overflow-wrap: break-word;
@@ -179,7 +175,7 @@
     .search-meta {
       display: flex;
       justify-content: center;
-      margin-top: 8px;
+      margin-top: 14px;
     }
 
     .search-counter {
@@ -212,8 +208,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 6px auto 10px;
-      max-width: 900px;
+      margin: 6px 0 10px;
     }
 
     .results-label {
@@ -247,20 +242,19 @@
 
     /* Single column — 1 card per row */
     .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(900px, 1fr));
-      gap: 24px;
-      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .card {
       background: #0e0e1c;
       border: 2px solid #ffffff;
       border-radius: 14px;
-      padding: 24px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
     }
 
     /* ── Herculean Synthesis card ── */
@@ -269,10 +263,10 @@
       border: 2px solid #c9a227;
       border-radius: 14px;
       padding: 22px;
-      margin: 0 auto 24px;
-      display: block;
-      width: 100%;
+      margin-bottom: 24px;
+      display: none;
     }
+    #synthesisCard.visible { display: block; }
     .synthesis-header {
       display: flex;
       align-items: center;
@@ -288,20 +282,17 @@
       text-transform: uppercase;
     }
     .synthesis-body { color: #ffffff !important; font-size: 0.95rem; line-height: 1.8; }
-    .synthesis-body.loading { color: #c9a227 !important; font-weight: bold; }
-    .synthesis-body.loading .dots-placeholder::after {
+    .synthesis-body.loading { color: #ffffff !important; font-style: italic; font-weight: bold; }
+    .synthesis-body.loading::after {
       content: '';
       animation: dots 1.5s steps(4, end) infinite;
+      color: #ffffff !important;
     }
     @keyframes dots {
       0%, 20% { content: ''; }
       40% { content: '.'; }
       60% { content: '..'; }
       80%, 100% { content: '...'; }
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
     }
     #synthesisCard .copy-btn:disabled {
       opacity: 1 !important;
@@ -354,8 +345,6 @@
       font-size: 0.9rem;
       line-height: 1.65;
       color: #ffffff;
-      overflow: hidden;
-      word-break: break-word;
     }
 
     .card-body.empty { color: #888; font-style: italic; }
@@ -397,7 +386,6 @@
     .card-footer-exports {
       display: flex;
       gap: 6px;
-      flex: 1;
     }
 
 
@@ -767,7 +755,7 @@
       position: fixed;
       left: 0;
       top: 50px;
-      width: 200px;
+      width: 280px;
       height: calc(100vh - 50px);
       background: #111122;
       border-right: 2px solid #333355;
@@ -796,8 +784,8 @@
       background: #0a0a0f;
       border: 1px solid #2a2a4a;
       border-radius: 6px;
-      font-size: 0.7rem;
-      color: #ffffff;
+      font-size: 0.8rem;
+      color: #aaa;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
@@ -857,53 +845,50 @@
           placeholder="I want to learn the meaning of life :)"
           maxlength="500"
         ></textarea>
-      </div>
-      <div style="display:flex;align-items:center;gap:24px;margin-top:12px;max-width:700px;margin-left:auto;margin-right:auto;width:100%;justify-content:center;">
-        <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;">
-          <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
-          Improve my prompt
-        </label>
-        <div id="promptScoreDisplay" style="font-size:0.9rem;color:#ffffff;font-weight:600;">
-          Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">0.0</span>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
+          <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;">
+            <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
+            Improve my prompt
+          </label>
+          <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
         </div>
       </div>
-      <div class="search-meta" style="display:flex;flex-direction:column;gap:12px;align-items:center;">
-        <button class="go-btn" id="goBtn" onclick="runQuery()" style="padding:10px 32px;border-radius:20px;">Go</button>
-        <div class="search-counter" style="border:2px solid rgba(201,162,39,0.4);border-radius:20px;padding:10px 16px;width:fit-content;">
+      <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
+        Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
+      </div>
+      <div class="search-meta">
+        <div class="search-counter">
           <span id="counterText">5 free searches today</span>
           <div class="counter-dots" id="counterDots"></div>
         </div>
       </div>
     </div>
 
-  </div>
-
-  <div class="results-header">
-    <span class="results-label">Responses</span>
-    <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
-  </div>
-
-  <div id="synthesisCard">
-    <div class="synthesis-header">
-      <span style="font-size:1.4rem">⚡</span>
-      <span class="synthesis-title">Herculean Synthesis</span>
+    <div class="results-header">
+      <span class="results-label">Responses</span>
+      <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All</button>
     </div>
-    <div class="synthesis-body" id="synthesisBody"></div>
-    <div class="card-footer" style="margin-top:14px;">
-      <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
-        <div class="card-footer-exports">
-          <button class="copy-btn" id="expSynthMd" onclick="exportMarkdownSynth()" disabled>📋 MD</button>
-          <button class="copy-btn" id="expSynthJson" onclick="exportJSONSynth()" disabled>{} JSON</button>
-          <button class="copy-btn" id="expSynthCsv" onclick="exportCSVSynth()" disabled>📊 CSV</button>
+
+    <div id="synthesisCard">
+      <div class="synthesis-header">
+        <span style="font-size:1.4rem">⚡</span>
+        <span class="synthesis-title">Herculean Synthesis</span>
+      </div>
+      <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses</div>
+      <div class="card-footer" style="margin-top:14px;">
+        <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
+          <div class="card-footer-exports">
+            <button class="copy-btn" id="expSynthMd" onclick="exportMarkdownSynth()" disabled>📋 MD</button>
+            <button class="copy-btn" id="expSynthJson" onclick="exportJSONSynth()" disabled>{} JSON</button>
+            <button class="copy-btn" id="expSynthCsv" onclick="exportCSVSynth()" disabled>📊 CSV</button>
+          </div>
+          <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
         </div>
-        <button class="copy-btn" id="copySynthBtn" onclick="copySynthesis()" disabled>Copy</button>
       </div>
     </div>
-  </div>
 
-  <div class="cards-grid" id="cardsGrid"></div>
+    <div class="cards-grid" id="cardsGrid"></div>
 
-  <div class="container">
     <div class="metrics-tab" id="metricsTab">
       <div class="metrics-header">📊 Metrics</div>
       <div class="metrics-grid" id="metricsGrid"></div>
@@ -914,6 +899,7 @@
         <button class="export-btn" id="exportCsvBtn" onclick="exportCSV()" disabled>📊 CSV</button>
       </div>
     </div>
+
   </div>
 
   <!-- Waitlist -->
@@ -981,7 +967,7 @@
     <div class="history-list" id="historyList"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!=="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -1006,7 +992,7 @@
       gemini:     { name: 'Gemini',    logo: 'Model Logos/gemini.png',     confidence: 85, logoSize: 110 },
       groq:       { name: 'Groq',      logo: 'Model Logos/groq.png',       confidence: 90 },
       deepseek:   { name: 'Phi-4',       logo: 'Model Logos/phi4.png',       confidence: 87, logoSize: 110 },
-      openrouter: { name: 'Llama 3',   logo: 'Model Logos/llama.png',      confidence: 84, logoSize: 110 },
+      openrouter: { name: 'Llama 3',   logo: 'Model Logos/llama.png',      confidence: 84 },
       togetherai: { name: 'Mistral',   logo: 'Model Logos/mistral.png',    confidence: 86, logoSize: 110 },
       cerebras:   { name: 'Cerebras',  logo: 'Model Logos/cerebras.png',   confidence: 83, logoSize: 110 },
       qwen:       { name: 'Qwen 2.5',  logo: 'Model Logos/qwen.png',       confidence: 86 },
@@ -1017,12 +1003,7 @@
     let lastResults = {};
 
     // ─── Search counter ────────────────────────────────────────────
-    function isAdmin() {
-      return localStorage.getItem('herc_admin') === 'true' || new URLSearchParams(window.location.search).get('admin') === 'rob2028';
-    }
-
     function getUsage() {
-      if (isAdmin()) return { date: new Date().toDateString(), count: 0, unlimited: true };
       const today = new Date().toDateString();
       try {
         const stored = JSON.parse(localStorage.getItem('herc_usage') || '{}');
@@ -1034,12 +1015,6 @@
 
     function updateCounterUI() {
       const usage     = getUsage();
-      if (usage.unlimited) {
-        document.getElementById('counterText').textContent = '∞ Unlimited access';
-        document.getElementById('counterDots').innerHTML = '';
-        document.getElementById('goBtn').disabled = false;
-        return;
-      }
       const remaining = Math.max(0, DAILY_LIMIT - usage.count);
       document.getElementById('counterText').textContent =
         remaining === 0 ? 'No free searches left today' :
@@ -1131,9 +1106,12 @@
     }
 
     function showLoadingCards() {
+      const synthCard = document.getElementById('synthesisCard');
+      synthCard.classList.add('visible');
       const synthBody = document.getElementById('synthesisBody');
       synthBody.className = 'synthesis-body loading';
-      synthBody.innerHTML = 'Synthesizing Responses<span class="dots-placeholder"></span>';
+      synthBody.style.color = '#ffffff';
+      synthBody.textContent = 'Synthesizing all responses';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
         if (card) card.classList.add('loading');
@@ -1243,11 +1221,9 @@
       const query = document.getElementById('queryInput').value.trim();
       if (!query) return;
       const usage = getUsage();
-      if (!usage.unlimited && usage.count >= DAILY_LIMIT) { showLockedOverlay(); return; }
-      if (!usage.unlimited) {
-        usage.count++;
-        saveUsage(usage);
-      }
+      if (usage.count >= DAILY_LIMIT) { showLockedOverlay(); return; }
+      usage.count++;
+      saveUsage(usage);
       updateCounterUI();
       const improvePrompt = document.getElementById('improvePrompt').checked;
       posthog.capture('herc_search', { query_length: query.length, searches_used: usage.count, improve_prompt: improvePrompt });
@@ -1256,7 +1232,7 @@
       document.getElementById('copyAllBtn').disabled = true;
       showLoadingCards();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
+      const timeout = setTimeout(() => controller.abort(), 60000);
       try {
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
@@ -1268,7 +1244,7 @@
         renderResults(await resp.json());
       } catch (err) {
         let msg = 'Error querying LLMs';
-        if (err.name === 'AbortError') msg = 'Request timeout (120s) — check your internet or try a shorter prompt';
+        if (err.name === 'AbortError') msg = 'Request timeout (60s) — server may be overloaded';
         else if (err.message.includes('Server error')) msg = err.message;
         else if (err instanceof TypeError) msg = 'Network error — check connection';
         LLM_ORDER.forEach(key => {
@@ -1631,29 +1607,34 @@
 
     // ─── Mode Switching ────────────────────────────────────────────
     const modeConfig = {
-      search: {
-        label: 'Basic Search',
-        placeholder: 'I want to learn the meaning of life :)',
-        height: '120px'
+      synthesis: {
+        label: 'Synthesis',
+        placeholder: 'Ask 10 LLMs and synthesize one definitive answer',
+        height: '100px'
+      },
+      debate: {
+        label: 'Debate',
+        placeholder: 'What topic or claim do you want explored from multiple angles?',
+        height: '100px'
+      },
+      consistency: {
+        label: 'Consistency',
+        placeholder: 'Enter a claim or question to check for LLM agreement',
+        height: '100px'
       },
       code: {
         label: 'Code Review',
         placeholder: 'Paste code for security, performance, readability & architecture review',
         height: '180px'
       },
-      research: {
-        label: 'Scholarly Research',
-        placeholder: 'What topic would you like researched from academic perspectives?',
-        height: '120px'
-      },
-      competitive: {
-        label: 'Competitive Analysis',
-        placeholder: 'Enter a company or product to analyze against competitors',
-        height: '120px'
+      optimizer: {
+        label: 'Prompt Optimizer',
+        placeholder: 'Enter your prompt — get optimization suggestions from all 10 LLMs',
+        height: '140px'
       }
     };
 
-    let currentMode = 'search';
+    let currentMode = 'synthesis';
 
     function switchMode(mode) {
       currentMode = mode;
@@ -1665,11 +1646,7 @@
       input.value = '';
 
       document.querySelectorAll('.mode-tab').forEach(tab => {
-        if (tab.dataset.mode === mode) {
-          tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
-        }
+        tab.classList.toggle('active', tab.dataset.mode === mode);
       });
 
       document.getElementById('promptScoreDisplay').style.display = 'none';
@@ -1678,60 +1655,17 @@
     // ─── Real-time Prompt Quality Display ──────────────────────────
     document.getElementById('queryInput').addEventListener('input', () => {
       const query = document.getElementById('queryInput').value.trim();
+      const display = document.getElementById('promptScoreDisplay');
       const scoreValue = document.getElementById('promptScoreValue');
-      const scoreDisplay = document.getElementById('promptScoreDisplay');
-      scoreDisplay.style.display = '';
-      let score = query ? scorePromptQuality(query) : 0;
-      if (preImproveScore > 0 && score < preImproveScore) {
-        score = preImproveScore;
-        preImproveScore = 0;
+      if (!query) {
+        display.style.display = 'none';
+        return;
       }
+      const score = scorePromptQuality(query);
       const color = score >= 8 ? '#4caf50' : score >= 6 ? '#c9a227' : '#ff9800';
       scoreValue.textContent = score.toFixed(1);
       scoreValue.style.color = color;
-    });
-
-    let preImproveScore = 0;
-
-    // ─── Improve Prompt ───────────────────────────────────────────
-    document.getElementById('improvePrompt').addEventListener('change', async (e) => {
-      if (!e.target.checked) return;
-      const input = document.getElementById('queryInput');
-      const prompt = input.value.trim();
-      if (!prompt) {
-        e.target.checked = false;
-        showToast('Enter a prompt first');
-        return;
-      }
-      preImproveScore = scorePromptQuality(prompt);
-      input.disabled = true;
-      e.target.disabled = true;
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 20000);
-        const resp = await fetch(`${BACKEND_URL}/improve`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!resp.ok) throw new Error('Improve failed');
-        const data = await resp.json();
-        input.value = data.improved;
-        input.dispatchEvent(new Event('input'));
-        showToast('Prompt improved');
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          showToast('Prompt improvement timed out - try again');
-        } else {
-          showToast('Could not improve prompt');
-        }
-        e.target.checked = false;
-      } finally {
-        input.disabled = false;
-        e.target.disabled = false;
-      }
+      display.style.display = 'block';
     });
 
     // ─── Enter key submission ──────────────────────────────────────
