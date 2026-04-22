@@ -264,9 +264,8 @@
       border-radius: 14px;
       padding: 22px;
       margin-bottom: 24px;
-      display: none;
+      display: block;
     }
-    #synthesisCard.visible { display: block; }
     .synthesis-header {
       display: flex;
       align-items: center;
@@ -875,7 +874,7 @@
         <span style="font-size:1.4rem">⚡</span>
         <span class="synthesis-title">Herculean Synthesis</span>
       </div>
-      <div class="synthesis-body loading" id="synthesisBody">Synthesizing all responses</div>
+      <div class="synthesis-body" id="synthesisBody"></div>
       <div class="card-footer" style="margin-top:14px;">
         <div style="display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;">
           <div class="card-footer-exports">
@@ -1118,12 +1117,9 @@
     }
 
     function showLoadingCards() {
-      const synthCard = document.getElementById('synthesisCard');
-      synthCard.classList.add('visible');
       const synthBody = document.getElementById('synthesisBody');
       synthBody.className = 'synthesis-body loading';
       synthBody.style.color = '#ffffff';
-      synthBody.textContent = 'Synthesizing all responses';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
         if (card) card.classList.add('loading');
