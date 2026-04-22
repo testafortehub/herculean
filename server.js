@@ -165,7 +165,7 @@ async function callGPT(query) {
   const response = await axios.post('https://api.openai.com/v1/chat/completions', {
     model: APIs.gpt.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gpt.key}` },
   });
@@ -199,7 +199,7 @@ async function callGroq(query) {
   const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
     model: APIs.groq.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.groq.key}` },
   });
@@ -233,7 +233,7 @@ async function callOpenRouter(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.openrouter.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
@@ -250,7 +250,7 @@ async function callTogetherAI(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.togetherai.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 800,
+    max_tokens: 1200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.togetherai.key}` },
   });
