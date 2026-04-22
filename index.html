@@ -289,6 +289,20 @@
     }
     .synthesis-body hr { border-color: #3a2e00; margin: 10px 0; }
 
+    /* Code block overflow handling */
+    .card-body pre, .synthesis-body pre {
+      overflow-x: auto;
+      max-width: 100%;
+      background: #1a1a30;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    .card-body pre code, .synthesis-body pre code {
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -930,6 +944,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!=="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     posthog.init('phc_zCBWu4fKfFGCok4odo7JfnX7nBaOdw19JXAxUFQ2hjy', { api_host: 'https://app.posthog.com' });
@@ -997,22 +1012,30 @@
       const isEarlyBird  = new Date() < earlyBirdEnd;
       const activePrice  = isEarlyBird ? EARLY_BIRD_PRICE : REGULAR_PRICE;
       const payLink      = `${PAYPAL_ME}/${activePrice.toFixed(2)}`;
-      document.getElementById('currentPrice').textContent  = `$${activePrice.toFixed(2)}`;
-      document.getElementById('mainPayBtn').href            = payLink;
-      document.getElementById('overlayPayBtn').href         = payLink;
+      const currentPrice = document.getElementById('currentPrice');
+      const mainPayBtn = document.getElementById('mainPayBtn');
+      const overlayPayBtn = document.getElementById('overlayPayBtn');
+      const priceStrike = document.getElementById('priceStrike');
+      const earlyBirdBadge = document.getElementById('earlyBirdBadge');
+      const countdown = document.getElementById('countdown');
+
+      if (currentPrice) currentPrice.textContent = `$${activePrice.toFixed(2)}`;
+      if (mainPayBtn) mainPayBtn.href = payLink;
+      if (overlayPayBtn) overlayPayBtn.href = payLink;
       if (isEarlyBird) {
-        document.getElementById('priceStrike').textContent = `Regular $${REGULAR_PRICE.toFixed(2)}`;
-        document.getElementById('earlyBirdBadge').style.display = '';
+        if (priceStrike) priceStrike.textContent = `Regular $${REGULAR_PRICE.toFixed(2)}`;
+        if (earlyBirdBadge) earlyBirdBadge.style.display = '';
         startCountdown(earlyBirdEnd);
       } else {
-        document.getElementById('priceStrike').textContent = '';
-        document.getElementById('earlyBirdBadge').style.display = 'none';
-        document.getElementById('countdown').textContent   = '';
+        if (priceStrike) priceStrike.textContent = '';
+        if (earlyBirdBadge) earlyBirdBadge.style.display = 'none';
+        if (countdown) countdown.textContent = '';
       }
     }
 
     function startCountdown(endDate) {
       const pad = n => String(n).padStart(2, '0');
+      const countdownEl = document.getElementById('countdown');
       function tick() {
         const diff = endDate - new Date();
         if (diff <= 0) { setupPricing(); return; }
@@ -1021,7 +1044,7 @@
         const m = Math.floor((diff % 3600000)  / 60000);
         const s = Math.floor((diff % 60000)    / 1000);
         const label = d > 0 ? `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s` : `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
-        document.getElementById('countdown').textContent = `⏱ Offer ends in: ${label}`;
+        if (countdownEl) countdownEl.textContent = `⏱ Offer ends in: ${label}`;
       }
       tick();
       setInterval(tick, 1000);
@@ -1052,7 +1075,10 @@
           <div class="card" id="card-${key}">
             <div class="card-header">
               <div class="card-name"><img src="${info.logo}" alt="${info.name}" title="${info.name}" style="max-width:${info.logoSize||80}px;max-height:${info.logoSize||80}px;width:auto;height:auto;object-fit:contain;border-radius:6px;"></div>
-              <span class="confidence-badge">${info.confidence}%</span>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <span class="confidence-badge">${info.confidence}%</span>
+                <div class="cost-display" id="cost-${key}" style="font-size:0.75rem;color:#c9a227;font-weight:600;">Cost: —</div>
+              </div>
             </div>
             <div class="card-body empty" id="body-${key}">Waiting for query…</div>
             <div class="card-footer">
@@ -1088,6 +1114,29 @@
       });
     }
 
+    function sanitizeMarkdown(content) {
+      if (!content) return content;
+
+      let text = content;
+
+      // Remove unclosed bold markers: **text without closing **
+      text = text.replace(/\*\*([^*]+)(?!\*\*)/g, '$1');
+
+      // Remove unclosed italic markers: *text without closing *
+      text = text.replace(/(?<!\*)\*([^*]+)(?!\*)/g, '$1');
+
+      // Remove unclosed underscore italics
+      text = text.replace(/_([^_]+)(?!_)/g, '$1');
+
+      // Remove blank list items (lines with just - or * and whitespace)
+      text = text.split('\n').filter(line => {
+        const trimmed = line.trim();
+        return !(trimmed === '-' || trimmed === '*' || trimmed === '- ' || trimmed === '* ');
+      }).join('\n');
+
+      return text;
+    }
+
     function renderResults(data) {
       const allParts = [];
       LLM_ORDER.forEach(key => {
@@ -1098,15 +1147,30 @@
         const expMdBtn = document.getElementById(`expMd-${key}`);
         const expJsonBtn = document.getElementById(`expJson-${key}`);
         const expCsvBtn = document.getElementById(`expCsv-${key}`);
+        const costDisplay = document.getElementById(`cost-${key}`);
         const r = data[key];
-        if (!r)      { body.className = 'card-body error'; body.textContent = 'No response received.'; return; }
-        if (r.error) { body.className = 'card-body error'; body.textContent = `Error: ${r.error}`;     return; }
+        if (!r)      {
+          body.className = 'card-body error';
+          body.textContent = 'No response received.';
+          if (costDisplay) costDisplay.textContent = 'Cost: —';
+          return;
+        }
+        if (r.error) {
+          body.className = 'card-body error';
+          body.textContent = `Error: ${r.error}`;
+          if (costDisplay) costDisplay.textContent = 'Cost: —';
+          return;
+        }
         body.className   = 'card-body';
-        body.innerHTML   = marked.parse(r.content || '(empty response)');
+        const sanitized  = sanitizeMarkdown(r.content || '(empty response)');
+        body.innerHTML   = DOMPurify.sanitize(marked.parse(sanitized));
         copyBtn.disabled = false;
         expMdBtn.disabled = false;
         expJsonBtn.disabled = false;
         expCsvBtn.disabled = false;
+        if (costDisplay && r.cost !== undefined) {
+          costDisplay.textContent = `Cost: $${r.cost.toFixed(4)}`;
+        }
         allParts.push(`=== ${LLM_INFO[key].name} ===\n${r.content}`);
       });
       const btn = document.getElementById('copyAllBtn');
@@ -1118,7 +1182,8 @@
       const synthBtn  = document.getElementById('copySynthBtn');
       if (data.synthesis && !data.synthesis.error) {
         synthBody.className = 'synthesis-body';
-        synthBody.innerHTML = marked.parse(data.synthesis.content);
+        const sanitized = sanitizeMarkdown(data.synthesis.content);
+        synthBody.innerHTML = DOMPurify.sanitize(marked.parse(sanitized));
         synthBtn.disabled   = false;
         document.getElementById('expSynthMd').disabled = false;
         document.getElementById('expSynthJson').disabled = false;
@@ -1147,21 +1212,29 @@
       document.getElementById('goBtn').disabled = true;
       document.getElementById('copyAllBtn').disabled = true;
       showLoadingCards();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
       try {
         const resp = await fetch(`${BACKEND_URL}/query`, {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify({ query, mode: currentMode }),
+          signal : controller.signal,
         });
-        if (!resp.ok) throw new Error(`Server responded ${resp.status}`);
+        if (!resp.ok) throw new Error(`Server error (${resp.status})`);
         renderResults(await resp.json());
       } catch (err) {
+        let msg = 'Error querying LLMs';
+        if (err.name === 'AbortError') msg = 'Request timeout (60s) — server may be overloaded';
+        else if (err.message.includes('Server error')) msg = err.message;
+        else if (err instanceof TypeError) msg = 'Network error — check connection';
         LLM_ORDER.forEach(key => {
           const body = document.getElementById(`body-${key}`);
           body.className  = 'card-body error';
-          body.textContent = `Could not reach server: ${err.message}`;
+          body.textContent = msg;
         });
       } finally {
+        clearTimeout(timeout);
         document.getElementById('goBtn').disabled = getUsage().count >= DAILY_LIMIT;
       }
     }
@@ -1571,6 +1644,11 @@
       scoreValue.textContent = score.toFixed(1);
       scoreValue.style.color = color;
       display.style.display = 'block';
+    });
+
+    // ─── Enter key submission ──────────────────────────────────────
+    document.getElementById('queryInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !document.getElementById('goBtn').disabled) runQuery();
     });
 
     // ─── Init ─────────────────────────────────────────────────────

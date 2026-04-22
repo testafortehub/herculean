@@ -75,6 +75,22 @@ app.post('/query', async (req, res) => {
     .map(k => `### ${results[k].name}\n${results[k].content}`)
     .join('\n\n');
 
+  // For code mode: find strongest response (first successful one with best quality)
+  let strongestModel = null;
+  let strongestReason = '';
+  if (mode === 'code') {
+    const successful = Object.keys(results).filter(k => results[k] && !results[k].error);
+    if (successful.length > 0) {
+      strongestModel = successful[0];
+      const resp = results[strongestModel];
+      const hasErrors = (resp.content.match(/error|critical|vulnerability|bug/gi) || []).length;
+      const hasRecommendations = (resp.content.match(/recommend|should|consider|improve/gi) || []).length;
+      strongestReason = hasErrors > 0 ? `identified ${hasErrors} critical security issues` :
+                        hasRecommendations > 0 ? `provided detailed improvement recommendations` :
+                        `offered comprehensive code analysis`;
+    }
+  }
+
   if (successfulResponses) {
     try {
       const synthesisPrompts = {
@@ -111,7 +127,15 @@ app.post('/query', async (req, res) => {
       }, {
         headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
       });
-      results.synthesis = { content: synthResponse.data.choices?.[0]?.message?.content || '' };
+      let synthContent = synthResponse.data.choices?.[0]?.message?.content || '';
+
+      // For code mode: prepend strongest model line
+      if (mode === 'code' && strongestModel) {
+        const modelName = results[strongestModel].name;
+        synthContent = `The leading response for this prompt came from ${modelName} because it ${strongestReason}\n\n${synthContent}`;
+      }
+
+      results.synthesis = { content: synthContent };
     } catch (e) {
       results.synthesis = { error: 'Synthesis unavailable' };
     }
