@@ -281,12 +281,10 @@
       text-transform: uppercase;
     }
     .synthesis-body { color: #ffffff !important; font-size: 0.95rem; line-height: 1.8; }
-    .synthesis-body.loading { color: #c9a227 !important; font-weight: bold; animation: bounce 1s ease-in-out infinite; display: flex; align-items: center; justify-content: center; min-height: 60px; }
-    .synthesis-body.loading::after {
+    .synthesis-body.loading { color: #c9a227 !important; font-weight: bold; }
+    .synthesis-body.loading .dots-placeholder::after {
       content: '';
       animation: dots 1.5s steps(4, end) infinite;
-      color: #c9a227 !important;
-      font-size: 1.2rem;
     }
     @keyframes dots {
       0%, 20% { content: ''; }
@@ -1124,7 +1122,7 @@
     function showLoadingCards() {
       const synthBody = document.getElementById('synthesisBody');
       synthBody.className = 'synthesis-body loading';
-      synthBody.style.color = '#ffffff';
+      synthBody.innerHTML = 'Synthesizing Responses<span class="dots-placeholder"></span>';
       LLM_ORDER.forEach(key => {
         const card = document.getElementById(`card-${key}`);
         if (card) card.classList.add('loading');
