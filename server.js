@@ -54,10 +54,10 @@ app.post('/query', async (req, res) => {
     { key: 'gemini',     fn: callGemini,     ms: 90000 },
     { key: 'groq',       fn: callGroq,       ms: 35000 },
     { key: 'deepseek',   fn: callDeepSeek,   ms: 90000 },
-    { key: 'openrouter', fn: callOpenRouter, ms: 50000 },
+    { key: 'openrouter', fn: callOpenRouter, ms: 55000 },
     { key: 'togetherai', fn: callTogetherAI, ms: 35000 },
     { key: 'cerebras',   fn: callCerebras,   ms: 35000 },
-    { key: 'qwen',       fn: callQwen,       ms: 50000 },
+    { key: 'qwen',       fn: callQwen,       ms: 55000 },
     { key: 'nemotron',   fn: callNemotron,   ms: 35000 },
   ];
 
@@ -189,15 +189,18 @@ async function callGPT(query) {
 async function callGemini(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.gemini.model,
-    messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
+    messages: [{ role: 'system', content: SYSTEM_PROMPT + ' Format responses as bullet points (- or *) with descriptions.' }, { role: 'user', content: query }],
     max_tokens: 2200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.gemini.key}` },
   });
   const usage = response.data.usage || {};
+  let content = response.data.choices?.[0]?.message?.content || '';
+  // Convert numbered lists to bullet points
+  content = content.replace(/^\d+\.\s+/gm, '- ');
   return {
     name: 'Gemini', icon: '🎨', confidence: 85,
-    content: response.data.choices?.[0]?.message?.content || '',
+    content: content,
     tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
     cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
   };
@@ -241,7 +244,7 @@ async function callOpenRouter(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.openrouter.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1000,
+    max_tokens: 800,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.openrouter.key}` },
   });
@@ -292,7 +295,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 2200,
+    max_tokens: 1600,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
