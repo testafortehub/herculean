@@ -1666,10 +1666,6 @@
     });
 
     // ─── Enter key submission ──────────────────────────────────────
-    document.getElementById('queryInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !document.getElementById('goBtn').disabled) runQuery();
-    });
-
     // ─── Init ─────────────────────────────────────────────────────
     renderEmptyCards();
     initHistory();
