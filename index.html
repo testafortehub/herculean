@@ -854,12 +854,12 @@
       <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
         Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
       </div>
-      <div class="search-meta">
+      <div class="search-meta" style="display:flex;flex-direction:column;gap:12px;">
+        <button class="go-btn" id="goBtn" onclick="runQuery()" style="width:100%;padding:14px 20px;border-radius:24px;">Go</button>
         <div class="search-counter">
           <span id="counterText">5 free searches today</span>
           <div class="counter-dots" id="counterDots"></div>
         </div>
-        <button class="go-btn" id="goBtn" onclick="runQuery()">Go</button>
       </div>
     </div>
 
