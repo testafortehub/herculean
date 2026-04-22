@@ -105,6 +105,8 @@
       font-size: 1rem;
       outline: none;
       transition: border-color 0.2s;
+      min-height: 120px;
+      resize: vertical;
     }
 
     .search-input:focus { border-color: #c9a227; }
@@ -1558,10 +1560,13 @@
     function renderHistory(items) {
       const list = document.getElementById('historyList');
       list.innerHTML = items.map((h, i) => `
-        <div class="history-item" onclick="loadHistoryQuery('${h.query.replace(/'/g, "\\'")}')" title="${h.query}">
+        <div class="history-item" data-query="${h.query.replace(/"/g, '&quot;')}" title="${h.query}">
           ${h.query.substring(0, 40)}${h.query.length > 40 ? '…' : ''}
         </div>
       `).join('');
+      list.querySelectorAll('.history-item').forEach(item => {
+        item.onclick = () => loadHistoryQuery(item.dataset.query);
+      });
     }
 
     function filterHistory() {
