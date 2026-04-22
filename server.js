@@ -292,7 +292,7 @@ async function callQwen(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.qwen.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1800,
+    max_tokens: 2200,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.qwen.key}` },
   });
