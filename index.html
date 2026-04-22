@@ -846,11 +846,11 @@
           placeholder="I want to learn the meaning of life :)"
           maxlength="500"
         ></textarea>
-        <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;margin-top:12px;">
-          <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
-          Improve my prompt
-        </label>
       </div>
+      <label style="display:flex;align-items:center;gap:8px;color:#ddd;font-size:0.95rem;cursor:pointer;margin-top:12px;max-width:700px;margin-left:auto;margin-right:auto;">
+        <input type="checkbox" id="improvePrompt" style="cursor:pointer;width:18px;height:18px;">
+        Improve my prompt
+      </label>
       <div id="promptScoreDisplay" style="margin-top:18px;font-size:1rem;color:#ffffff;display:none;font-weight:600;">
         Prompt Quality: <span id="promptScoreValue" style="color:#c9a227;font-weight:700;">—</span>
       </div>
@@ -1658,7 +1658,11 @@
       input.value = '';
 
       document.querySelectorAll('.mode-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.mode === mode);
+        if (tab.dataset.mode === mode) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
       });
 
       document.getElementById('promptScoreDisplay').style.display = 'none';
