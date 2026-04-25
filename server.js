@@ -41,6 +41,32 @@ const APIs = {
 // Health check endpoint for Railway
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Debug endpoint
+app.post('/debug-query', async (req, res) => {
+  const { query } = req.body;
+  const results = {};
+  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), ms));
+
+  const calls = [
+    { key: 'gropov2', fn: callGRPOv2, ms: 60000 },
+  ];
+
+  await Promise.all(calls.map(async ({ key, fn, ms }) => {
+    const startTime = Date.now();
+    try {
+      const result = await Promise.race([fn(query), timeout(ms)]);
+      results[key] = { ...result, responseTime: Date.now() - startTime };
+    } catch (e) {
+      const detail = e.response?.data
+        ? JSON.stringify(e.response.data).substring(0, 300)
+        : e.message;
+      results[key] = { error: detail, responseTime: Date.now() - startTime };
+    }
+  }));
+
+  res.json(results);
+});
+
 // Prompt improvement function
 function improvePrompt(query) {
   const improvements = [
@@ -89,6 +115,7 @@ app.post('/query', async (req, res) => {
     { key: 'cerebras',   fn: callCerebras,   ms: 60000 },
     { key: 'qwen',       fn: callQwen,       ms: 90000 },
     { key: 'nemotron',   fn: callNemotron,   ms: 60000 },
+    { key: 'gropov2',    fn: callGRPOv2,     ms: 60000 },
   ];
 
   await Promise.all(calls.map(async ({ key, fn, ms }) => {
@@ -388,6 +415,19 @@ async function callNemotron(query) {
     content: response.data.choices?.[0]?.message?.content || '',
     tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
     cost: (usage.prompt_tokens || 0) * 0.05 / 1000000 + (usage.completion_tokens || 0) * 0.15 / 1000000
+  };
+}
+
+async function callGRPOv2(query) {
+  const response = await axios.post('http://127.0.0.1:5555/generate', {
+    prompt: query,
+    max_tokens: 600
+  });
+  return {
+    name: 'Business Strategy GRPO v2', icon: '📊', confidence: 89,
+    content: response.data.response || '',
+    tokens: { prompt: 0, completion: response.data.tokens_generated || 0 },
+    cost: 0
   };
 }
 
