@@ -41,6 +41,59 @@ const APIs = {
 // Health check endpoint for Railway
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Diagnostic endpoint - detailed API key validation
+app.post('/test-apis', async (req, res) => {
+  const results = {};
+  const testQuery = 'Say OK';
+
+  console.log('=== API Diagnostic Test ===');
+  console.log('Testing each API with configured keys...');
+
+  for (const [key, config] of Object.entries(APIs)) {
+    let endpoint = '';
+    let headers = { 'Authorization': `Bearer ${config.key}` };
+
+    try {
+      if (!config.key || config.key === 'sk-or-v1-' || config.key.includes('YOUR_TOKEN')) {
+        results[key] = { status: 'MISSING', model: config.model, error: 'API key not configured in .env' };
+        console.log(`${key}: MISSING KEY`);
+        continue;
+      }
+
+      if (key === 'gpt') {
+        endpoint = 'https://api.openai.com/v1/chat/completions';
+      } else if (key === 'groq') {
+        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+      } else if (key === 'cerebras') {
+        endpoint = 'https://api.cerebras.ai/v1/chat/completions';
+      } else {
+        endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+      }
+
+      const response = await axios.post(endpoint, {
+        model: config.model,
+        messages: [{ role: 'user', content: testQuery }],
+        max_tokens: 10,
+      }, { headers, timeout: 5000 });
+
+      results[key] = { status: '✓ OK', model: config.model, response: response.data.choices?.[0]?.message?.content };
+      console.log(`${key}: ✓ SUCCESS`);
+    } catch (e) {
+      const errorMsg = e.response?.data?.error?.message || e.response?.data?.error || e.message;
+      const httpStatus = e.response?.status || 'NETWORK_ERROR';
+      results[key] = {
+        status: `✗ FAIL [${httpStatus}]`,
+        model: config.model,
+        error: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg),
+        keyPrefix: config.key ? config.key.substring(0, 15) + '...' : 'MISSING'
+      };
+      console.log(`${key}: ✗ FAIL [${httpStatus}] - ${errorMsg}`);
+    }
+  }
+
+  res.json(results);
+});
+
 // Debug endpoint
 app.post('/debug-query', async (req, res) => {
   const { query } = req.body;
@@ -124,9 +177,10 @@ app.post('/query', async (req, res) => {
       const result = await Promise.race([fn(processedQuery), timeout(ms)]);
       results[key] = { ...result, responseTime: Date.now() - startTime };
     } catch (e) {
-      const detail = e.response?.data
-        ? JSON.stringify(e.response.data).substring(0, 300)
-        : e.message;
+      const apiError = e.response?.data?.error?.message || e.response?.data?.error || e.message;
+      const httpStatus = e.response?.status || '';
+      const detail = typeof apiError === 'string' ? apiError : JSON.stringify(apiError).substring(0, 300);
+      console.error(`${key} failed:`, `[${httpStatus}]`, detail);
       results[key] = { error: detail, responseTime: Date.now() - startTime };
     }
   }));
@@ -232,7 +286,10 @@ Provide ONLY the improved prompt, nothing else. Do not include explanations or m
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
       model: APIs.claude.model,
-      messages: [{ role: 'user', content: improvementPrompt }],
+      messages: [
+        { role: 'system', content: 'You are an expert prompt engineer. Improve prompts to be more effective, specific, and actionable.' },
+        { role: 'user', content: improvementPrompt }
+      ],
       max_tokens: 1000,
     }, {
       headers: { 'Authorization': `Bearer ${APIs.claude.key}` },
@@ -243,8 +300,14 @@ Provide ONLY the improved prompt, nothing else. Do not include explanations or m
 
     res.json({ improved });
   } catch (err) {
-    console.error('Improve endpoint error:', err);
-    res.status(500).json({ error: 'Failed to improve prompt' });
+    console.error('Improve endpoint error:', err.message);
+    const apiError = err.response?.data?.error;
+    if (apiError) {
+      console.error('API error details:', apiError);
+      res.status(500).json({ error: 'Failed to improve prompt', detail: apiError.message });
+    } else {
+      res.status(500).json({ error: 'Failed to improve prompt', detail: err.message });
+    }
   }
 });
 
