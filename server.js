@@ -30,7 +30,7 @@ const APIs = {
   gpt:       { key: process.env.GPT_API_KEY,        model: 'gpt-4o-mini' },
   gemini:    { key: process.env.OPENROUTER_API_KEY, model: 'google/gemini-2.0-flash-lite-001' },
   groq:      { key: process.env.GROQ_API_KEY,       model: 'llama-3.1-8b-instant' },
-  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'microsoft/phi-4' },
+  deepseek:  { key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mistral-7b-instruct' },
   openrouter:{ key: process.env.OPENROUTER_API_KEY, model: 'meta-llama/llama-3.1-8b-instruct' },
   togetherai:{ key: process.env.OPENROUTER_API_KEY, model: 'mistralai/mixtral-8x22b-instruct' },
   cerebras:  { key: process.env.CEREBRAS_API_KEY,   model: 'llama3.1-8b' },
@@ -162,7 +162,7 @@ app.post('/query', async (req, res) => {
     { key: 'gpt',        fn: callGPT,        ms: 60000 },
     { key: 'gemini',     fn: callGemini,     ms: 90000 },
     { key: 'groq',       fn: callGroq,       ms: 60000 },
-    { key: 'deepseek',   fn: callDeepSeek,   ms: 90000 },
+    { key: 'deepseek',   fn: callDeepSeek,   ms: 50000 },
     { key: 'openrouter', fn: callOpenRouter, ms: 60000 },
     { key: 'togetherai', fn: callTogetherAI, ms: 60000 },
     { key: 'cerebras',   fn: callCerebras,   ms: 60000 },
@@ -383,16 +383,16 @@ async function callDeepSeek(query) {
   const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
     model: APIs.deepseek.model,
     messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }],
-    max_tokens: 1500,
+    max_tokens: 1000,
   }, {
     headers: { 'Authorization': `Bearer ${APIs.deepseek.key}` },
   });
   const usage = response.data.usage || {};
   return {
-    name: 'Phi-4', icon: '🔷', confidence: 87,
+    name: 'Mistral', icon: '⚡', confidence: 84,
     content: response.data.choices?.[0]?.message?.content || '',
     tokens: { prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0 },
-    cost: (usage.prompt_tokens || 0) * 0.06 / 1000000 + (usage.completion_tokens || 0) * 0.18 / 1000000
+    cost: (usage.prompt_tokens || 0) * 0.27 / 1000000 + (usage.completion_tokens || 0) * 0.81 / 1000000
   };
 }
 
